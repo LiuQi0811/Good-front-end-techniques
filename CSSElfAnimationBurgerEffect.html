@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSS精灵动画汉堡包效果</title>
+    <style>
+        /* 导入Manrope字体，支持多种字重 */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
+        /* 根元素样式定义 */
+        :root {
+            /* 设置字体和基本文本属性 */
+            font-family: "Manrope", serif;
+            font-optical-sizing: auto;
+            line-height: 1.5;
+            font-weight: 400;
+
+            /* 设置深色模式配色方案 */
+            color-scheme: light dark;
+            color: rgba(255, 255, 255, 0.87);
+            background-color: #242424;
+
+            /* 字体渲染优化 */
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+
+            /* 定义精灵图资源URL */
+            --sprite-image: url("https://assets.codepen.io/36869/burger2.webp");
+        }
+
+        /*
+         * =============================================
+         * 基础样式层
+         * 包含页面布局和容器样式
+         * =============================================
+         */
+        @layer base {
+            /* 页面主体样式 */
+            body {
+                margin: 0;
+                height: 100vh; /* 使用视口高度 */
+                display: flex;
+                align-items: center; /* 垂直居中 */
+                justify-content: center; /* 水平居中 */
+                padding: 1rem;
+                box-sizing: border-box;
+            }
+
+            /*
+             * 当鼠标未悬停时重置动画
+             * 提升非交互状态下的性能
+             */
+            body:not(:hover) .sprite {
+                animation: to-start 0s !important;
+
+                /* 伪元素同样重置动画 */
+                &:after {
+                    animation: to-start 0s !important;
+                }
+            }
+
+            /* 精灵图容器样式 */
+            .sprite-container {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                margin: 0 auto;
+                padding: 6rem 1rem; /* 上下大间距 */
+                background: #282828; /* 深灰背景 */
+                border-radius: 1rem;  /* 圆角 */
+                box-sizing: border-box;
+                box-shadow: 0 0 12px 3px #1b1b1b; /* 阴影效果 */
+
+                /* 网格布局 */
+                display: grid;
+                column-gap: clamp(0.5rem, 2vw, 2rem); /* 响应式列间距 */
+                place-items: center; /* 内容居中 */
+                grid-template-columns: 1fr auto 1fr; /* 三列布局 */
+
+                /* 左右提示文字样式 */
+                .additional {
+                    display: flex;
+                    align-items: center;
+                    gap: .5rem;
+                    font-size: clamp(1rem, 4vw, 2rem); /* 响应式字体大小 */
+                    text-transform: uppercase; /* 大写文本 */
+                    color: #363636; /* 深灰色 */
+                    white-space: nowrap; /* 禁止换行 */
+
+                    /* SVG图标样式 */
+                    > svg {
+                        width: clamp(16px, 4vw, 32px); /* 响应式宽度 */
+                        height: clamp(16px, 4vw, 32px); /* 响应式高度 */
+                    }
+                }
+
+                /* 精灵图居中 */
+                .sprite {
+                    margin: 0 auto;
+                }
+
+                /* 底部复选框样式 */
+                input[type="checkbox"] {
+                    position: absolute;
+                    bottom: 1rem; /* 距底部1rem */
+                    width: 25%; /* 宽度为容器25% */
+                    margin: 0;
+                    appearance: none; /* 移除默认样式 */
+                    height: 3px; /* 细线高度 */
+                    border-radius: 3px; /* 圆角 */
+                    background: #616161; /* 默认灰色 */
+                    left: 50%; /* 水平居中 */
+                    translate: -50% 0; /* 水平居中 */
+
+                    /* 选中状态样式 */
+                    &:checked {
+                        background: #60ff97; /* 绿色 */
+                        box-shadow: 0 0 1rem #60ff97; /* 发光效果 */
+                    }
+                }
+            }
+        }
+
+        /*
+         * =============================================
+         * 主样式层 - 精灵动画核心实现
+         * =============================================
+         */
+        @layer main {
+            /*
+             * 定义自定义属性 --sprite-fs 用于控制动画帧
+             * 语法：整数
+             * 初始值：0
+             * 不继承
+             */
+            @property --sprite-fs {
+                syntax: "<integer>";
+                initial-value: 0;
+                inherits: false
+            }
+
+            /* 精灵图核心样式 */
+            .sprite {
+                /*
+                 * 动画相关变量
+                 */
+                --sprite-ad: normal; /* 动画方向: 正常 */
+                --sprite-af: forwards; /* 动画填充模式: 保持结束状态 */
+                --sprite-ap: running; /* 动画播放状态: 运行中 */
+                --sprite-ai: 1; /* 动画迭代次数: 1次 */
+                --sprite-at: linear; /* 动画时间函数: 线性 */
+                --sprite-fr: 120; /* 动画帧率: 120fps */
+
+                /*
+                 * 精灵图布局变量
+                 */
+                --sprite-c: 5; /* 精灵图列数: 5列 */
+                --sprite-h: 2160; /* 精灵图原始高度(px) */
+                --sprite-w: 1950; /* 精灵图原始宽度(px) */
+                --sprite-f: 30; /* 总帧数: 30帧 */
+                --sprite-fe: calc(var(--sprite-f) - 1); /* 结束帧位置: 29 */
+                --sprite-as: calc(var(--sprite-f) / var(--sprite-fr) * 1s); /* 动画时长: 30/120=0.25s */
+
+                /*
+                 * 精灵图计算变量
+                 */
+                --sprite-th: 128; /* 目标显示高度: 128px */
+                --sprite-r: round(up, calc(var(--sprite-f) / var(--sprite-c)), 1); /* 计算行数: ceil(30/5)=6 */
+                --sprite-sh: calc(var(--sprite-h) / var(--sprite-r)); /* 单帧高度: 2160/6=360px */
+                --sprite-ar: calc(var(--sprite-th) / var(--sprite-sh)); /* 缩放比例: 128/360≈0.3556 */
+                --sprite-uh: calc(var(--sprite-h) * var(--sprite-ar)); /* 缩放后总高度: 2160*0.3556≈768px */
+                --sprite-uw: calc(var(--sprite-w) * var(--sprite-ar)); /* 缩放后总宽度: 1950*0.3556≈693px */
+                --sprite-tw: calc(var(--sprite-uw) / var(--sprite-c)); /* 单帧宽度: 693/5≈138.6px */
+
+                /* 基本样式 */
+                display: block;
+                position: relative;
+                top: 50px; /* 初始位置下移50px */
+                translate: 0 -50px; /* 向上平移50px实现垂直居中 */
+                transform-style: preserve-3d; /* 保留3D变换 */
+                transition: top .5s ease; /* 平滑过渡效果 */
+                cursor: pointer; /* 手型光标 */
+                height: calc(1px * var(--sprite-th)); /* 高 128px */
+                width: calc(1px * var(--sprite-tw)); /* 宽 ~138.6px */
+                background-image: var(--sprite-image); /* 精灵图 */
+                transform-origin: center center; /* 变换原点居中 */
+                background-size: calc(1px * var(--sprite-uw)) calc(1px * var(--sprite-uh)); /* 背景尺寸 693px × 768px */
+
+                /*
+                 * 计算当前帧的位置:
+                 * --row: 计算当前帧所在行 (向下取整)
+                 * --col: 计算当前帧所在列 (取模)
+                 */
+                --row: calc(round(down, calc(calc(var(--sprite-tw) * var(--sprite-fs)) / var(--sprite-uw)), 1) * var(--sprite-th));
+                /* X position, mod to check COLUMN */
+                --col: mod(calc(var(--sprite-tw) * var(--sprite-fs)), var(--sprite-uw));
+                background-position: calc(-1px * var(--col)) calc(-1px * var(--row));
+
+                /* 初始动画：回到起始帧 */
+                animation: to-start var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+
+                /*
+                 * 当关联的复选框被选中时的样式
+                 * 使用:has选择器检测相邻的input是否被选中
+                 */
+                &:has(+ input:checked) {
+                    /* 更新动画参数 */
+                    --sprite-ad: alternate; /* 动画方向: 交替 */
+                    --sprite-af: none; /* 动画填充模式: 无 */
+                    --sprite-ai: infinite; /* 动画迭代次数: 无限 */
+                    --sprite-fr: 30; /* 帧率: 30fps */
+
+                    --sprite-fe: calc(var(--sprite-f) - 1);
+                    --sprite-as: calc(var(--sprite-f) / var(--sprite-fr) * 1s); /* 时长: 1s */
+
+                    top: 0; /* 移动到顶部 */
+                    animation: frame var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+
+                    /* 投影效果 */
+                    &:before {
+                        bottom: calc(-25% - 50px); /* 调整投影位置 */
+                        scale: .75; /* 缩小投影 */
+                        filter: contrast(0) brightness(0.15) blur(5px); /* 投影滤镜 */
+                        animation: frame var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+                    }
+                }
+
+                /* 悬停效果 */
+                &:hover {
+                    top: 0; /* 移动到顶部 */
+                    animation: frame var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+
+                    /* 投影效果 */
+                    &:before {
+                        bottom: calc(-25% - 50px); /* 调整投影位置 */
+                        scale: .75; /* 缩小投影 */
+                        filter: contrast(0) brightness(0.15) blur(5px);
+                        animation: frame var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+                    }
+                }
+
+                /* 投影伪元素 (3D效果) */
+                &:before {
+                    content: "";
+                    display: block;
+                    position: relative;
+                    --sprite-th: 128; /* 与主元素相同高度 */
+                    height: calc(1px * var(--sprite-th));
+                    width: calc(1px * var(--sprite-tw));
+                    background-image: var(--sprite-image); /* 相同精灵图 */
+                    background-size: calc(1px * var(--sprite-uw)) calc(1px * var(--sprite-uh));
+                    background-position: calc(-1px * var(--col)) calc(-1px * var(--row)); /* 相同位置 */
+                    animation: to-start var(--sprite-as) var(--sprite-at) 0s var(--sprite-ai) var(--sprite-ad) var(--sprite-af) var(--sprite-ap);
+
+                    /* 投影样式 */
+                    filter: contrast(0) brightness(0) blur(5px); /* 黑色模糊效果 */
+                    transform: rotateX(45deg) translateZ(-3em); /* 3D变换 */
+                    bottom: 0%; /* 初始位置 */
+                    z-index: -1; /* 在主元素下方 */
+                    pointer-events: none; /* 不响应鼠标事件 */
+                    transition: bottom .5s ease, scale .5s ease, filter .5s ease; /* 过渡效果 */
+                }
+            }
+        }
+
+        /*
+         * =============================================
+         * 动画关键帧定义
+         * =============================================
+         */
+        @keyframes to-start {
+            from {
+                --sprite-fs: var(--sprite-fe); /* 从结束帧开始 */
+            }
+            to {
+                --sprite-fs: 0; /* 回到起始帧 */
+            }
+        }
+
+        @keyframes frame {
+            to {
+                --sprite-fs: var(--sprite-fe); /* 播放到结束帧 */
+            }
+        }
+
+        /*
+         * =============================================
+         * 无障碍支持
+         * 为偏好减少运动的用户禁用动画
+         * =============================================
+         */
+        @media (prefers-reduced-motion) {
+            * {
+                animation: none; /* 禁用所有动画 */
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 标题区域 -->
+    <h1 style="text-align: center; text-wrap-style: balance;">#CSS精灵动画 – <span
+            style="text-decoration: underline; background: #dddddd; color: #f16634; padding: 0 0.5rem"> 汉堡包效果</span>
+    </h1>
+    <!-- 精灵动画容器 -->
+    <div class="sprite-container">
+        <!-- 左侧提示 -->
+        <div class="additional left">
+            <span>悬浮</span>
+            <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+                <path d="M19.54,3.1,3.62,10.31A1.17,1.17,0,0,0,4,12.5l6.23,1.26L11.5,20a1.17,1.17,0,0,0,2.19.39L20.9,4.46A1,1,0,0,0,19.54,3.1Z"
+                      fill="none" stroke-width="2"></path>
+            </svg>
+        </div>
+
+        <!-- 中央精灵图区域 -->
+        <div>
+            <!-- 精灵图标签，关联到复选框 -->
+            <label class="sprite" for="select"></label>
+            <!-- 隐藏的复选框，用于控制动画状态 -->
+            <input type="checkbox" id="select">
+        </div>
+
+        <!-- 右侧提示 -->
+        <div class="additional right">
+            <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 3.5V2M5.06066 5.06066L4 4M5.06066 13L4 14.0607M13 5.06066L14.0607 4M3.5 9H2M15.8645 16.1896L13.3727 20.817C13.0881 21.3457 12.9457 21.61 12.7745 21.6769C12.6259 21.7349 12.4585 21.7185 12.324 21.6328C12.1689 21.534 12.0806 21.2471 11.9038 20.6733L8.44519 9.44525C8.3008 8.97651 8.2286 8.74213 8.28669 8.58383C8.33729 8.44595 8.44595 8.33729 8.58383 8.2867C8.74213 8.22861 8.9765 8.3008 9.44525 8.44519L20.6732 11.9038C21.247 12.0806 21.5339 12.169 21.6327 12.324C21.7185 12.4586 21.7348 12.6259 21.6768 12.7745C21.61 12.9458 21.3456 13.0881 20.817 13.3728L16.1896 15.8645C16.111 15.9068 16.0717 15.9279 16.0374 15.9551C16.0068 15.9792 15.9792 16.0068 15.9551 16.0374C15.9279 16.0717 15.9068 16.111 15.8645 16.1896Z"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>点击</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>
