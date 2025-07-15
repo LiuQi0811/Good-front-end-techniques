@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <!-- 基础元数据 -->
+    <meta charset="UTF-8">
+    <!-- 响应式视口设置 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!-- IE兼容模式 -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HomePod用户界面</title>
+    <style>
+        /* 基础样式重置 */
+        * {
+            outline: none; /* 移除所有元素的轮廓线 */
+            box-sizing: border-box; /* 盒模型设置为border-box */
+            -webkit-font-smoothing: antialiased; /* 字体抗锯齿 */
+        }
+
+        /* 页面整体样式 */
+        body {
+            background-color: #202020; /* 深色背景 */
+            display: flex; /* 使用flex布局 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            flex-direction: column; /* 垂直排列子元素 */
+            width: 100%; /* 宽度100% */
+            height: 100vh;  /* 高度100%视口 */
+            padding: .5rem; /* 内边距 */
+            margin: 0; /* 移除默认外边距 */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* 系统字体 */
+            overflow: hidden; /* 隐藏溢出内容 */
+        }
+
+        /* HomePod容器 */
+        .homepod-wrapper {
+            position: relative; /* 相对定位，为子元素绝对定位提供参照 */
+        }
+
+        /* HomePod图片样式 */
+        .homepod-img {
+            max-width: 38rem; /* 最大宽度 */
+            max-height: 38rem; /* 最大高度 */
+            width: 100%; /* 宽度100% */
+            filter: brightness(0.4) drop-shadow(0 0 12px rgba(255, 255, 255, .15)); /* 图片滤镜：降低亮度并添加阴影 */
+        }
+
+        /* 播放器区域 */
+        .homepod-player {
+            position: absolute; /* 绝对定位 */
+            background-color: black; /* 黑色背景 */
+            width: 62%; /* 宽度 */
+            height: 62%; /* 高度 */
+            top: 50%; /* 顶部定位 */
+            right: 50%; /* 右侧定位 */
+            transform: translate(50%, -50%); /* 居中定位 */
+            border-radius: 50%; /* 圆形 */
+        }
+
+        /* 渐变背景样式 */
+        .gradient-background {
+            background: linear-gradient(49deg, #2b3d47, #a81a0c, #3233af, #ce7209); /* 多色渐变背景 */
+            background-size: 240% 240%; /* 背景大小 */
+            animation: gradient-animation 4s ease infinite; /* 背景动画 */
+            width: 100%; /* 宽度100% */
+            height: 100%; /* 高度100% */
+            border-radius: 50%; /* 圆形 */
+            border: 4px solid rgba(32, 22, 22, 0.6); /* 边框 */
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            padding: 30px; /* 内边距 */
+
+            /* 模糊覆盖层样式 */
+            &.overlay {
+                position: absolute; /* 绝对定位 */
+                top: 0; /* 绝对定位 */
+                filter: blur(100px); /* 模糊效果 */
+            }
+        }
+
+        /* 按钮基础样式 */
+        .button {
+            background-color: transparent; /* 透明背景 */
+            border: 0; /* 无边框 */
+            width: 12%; /* 宽度 */
+            height: 12%; /* 高度 */
+            cursor: pointer; /* 手型指针 */
+            padding: 0; /* 无内边距 */
+            transition: .3s; /* 过渡效果 */
+            color: #b6b9bd; /* 默认颜色 */
+
+            /* 按钮悬停效果 */
+            &:hover {
+                color: #fff; /* 白色 */
+            }
+
+            /* 按钮点击效果 */
+            &:active {
+                transform: scale(.8); /* 缩放效果 */
+            }
+        }
+
+        /* 歌手区域容器 */
+        .singer-wrapper {
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: space-between; /* 两端对齐 */
+        }
+
+        /* 用户头像样式 */
+        .homepod-owner {
+            width: 8%; /* 宽度 */
+            height: 8%; /* 高度 */
+            padding: 3px; /* 内边距 */
+            position: absolute; /* 绝对定位 */
+            top: 5%; /* 顶部定位 */
+            background-color: #f2c8bb; /* 背景色 */
+            border-radius: 50%; /* 圆形 */
+        }
+
+        /* 歌手图片区域 */
+        .singer-area {
+            width: 32%; /* 宽度 */
+            height: 32%; /* 高度 */
+            border-radius: 50%; /* 圆形 */
+            box-shadow: 0px 0px 0px 12px rgba(0, 0, 0, 0.24); /* 阴影效果 */
+            background-color: rgba(0, 0, 0, 0.24); /* 半透明背景 */
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+        }
+
+        /* 歌手图片 */
+        .singer {
+            width: 100%; /* 宽度100% */
+            height: 100%; /* 高度100% */
+            border-radius: 50%; /* 圆形 */
+            transition: transform 0.2s ease, opacity 0.2s ease; /* 过渡效果 */
+            opacity: 1; /* 不透明 */
+        }
+
+        /* 淡出效果 */
+        .singer.fade-out {
+            transform: scale(0.9); /* 缩小 */
+            opacity: 0; /* 透明 */
+        }
+
+        /* 淡入效果 */
+        .singer.fade-in {
+            transform: scale(1.05); /* 放大 */
+            opacity: 1; /* 不透明 */
+        }
+
+        /* 歌曲信息区域 */
+        .song-info {
+            text-align: center; /* 文本居中 */
+            opacity: 1; /* 不透明 */
+            position: absolute; /* 绝对定位 */
+            display: flex; /* flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            gap: 4px; /* 元素间距 */
+            bottom: 12%; /* 底部定位 */
+            transform: translateY(0); /* Y轴变换 */
+            transition: transform 0.5s ease, opacity 0.5s ease; /* 过渡效果 */
+        }
+
+        /* 隐藏状态 */
+        .song-info.hide {
+            opacity: 0; /* 透明 */
+            transform: translateY(20px); /* 下移 */
+        }
+
+        /* 显示状态 */
+        .song-info.show {
+            opacity: 1; /* 不透明 */
+            transform: translateY(0); /* 复位 */
+        }
+
+        /* 歌曲标题 */
+        .song-title {
+            font-size: clamp(14px, 2vw, 18px); /* 响应式字体大小 */
+            font-weight: bold; /* 粗体 */
+            margin: 0; /* 无外边距 */
+            color: #fff; /* 白色 */
+        }
+
+        /* 艺术家名字 */
+        .artist-name {
+            font-size: clamp(10px, 1.4vw, 15px); /* 响应式字体大小 */
+            margin: 0; /* 无外边距 */
+            color: #aaa; /* 浅灰色 */
+        }
+
+        /* 背景渐变动画 */
+        @keyframes gradient-animation {
+            0% {
+                background-position: 0% 50%;  /* 起始位置 */
+            }
+            50% {
+                background-position: 100% 50%; /* 中间位置 */
+            }
+            100% {
+                background-position: 0% 50%; /* 结束位置 */
+            }
+        }
+
+    </style>
+
+
+</head>
+<body>
+<!-- HomePod整体容器 -->
+<div class="homepod-wrapper">
+    <!-- 模糊背景层 -->
+    <div class="gradient-background overlay"></div>
+    <!-- HomePod设备图片 -->
+    <img class="homepod-img" src="https://assets.codepen.io/3364143/home-Photoroom.png" alt=""/>
+    <!-- 播放器区域 -->
+    <div class="homepod-player">
+        <div class="gradient-background main">
+            <!-- 用户头像 -->
+            <img class="homepod-owner"
+                 src="https://y.qq.com/music/photo_new/T002R300x300M00000224gBC4JThvU_1.jpg?max_age=2592000"
+                 alt=""/>
+            <!-- 歌手区域 -->
+            <div class="singer-wrapper">
+                <!-- 上一首按钮 -->
+                <button class="button prev">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V8.69c0-1.44-1.555-2.343-2.805-1.628L12 11.029v-2.34c0-1.44-1.555-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061Z"/>
+                    </svg>
+                </button>
+                <!-- 歌手图片区域 -->
+                <div class="singer-area">
+                    <img src="https://y.qq.com/music/photo_new/T002R300x300M000001LkQ7q377eDD_1.jpg?max_age=2592000" alt="" class="singer"/>
+                </div>
+                <!-- 下一首按钮 -->
+                <button class="button next">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M5.055 7.06C3.805 6.347 2.25 7.25 2.25 8.69v8.122c0 1.44 1.555 2.343 2.805 1.628L12 14.471v2.34c0 1.44 1.555 2.343 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256l-7.108-4.061C13.555 6.346 12 7.249 12 8.689v2.34L5.055 7.061Z"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- 歌曲信息 -->
+            <div class="song-info">
+                <h3 class="song-title">Rewrite</h3>
+                <p class="artist-name">Gen1es</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    // 歌曲图片数组
+    const images = [
+        "https://y.qq.com/music/photo_new/T002R300x300M000000EjQZR0Bz6b8_1.jpg?max_age=2592000", "https://y.qq.com/music/photo_new/T002R300x300M000003ybpFn0U7emm_1.jpg?max_age=2592000",
+        "https://y.qq.com/music/photo_new/T002R300x300M00000375twA1kBpXN_1.jpg?max_age=2592000","https://y.qq.com/music/photo_new/T002R300x300M000002tj9jZ10aBdJ_1.jpg?max_age=2592000",
+        "https://y.qq.com/music/photo_new/T002R300x300M00000236v7t2ccBYE_1.jpg?max_age=2592000","https://y.qq.com/music/photo_new/T002R300x300M000003tkYlM1UARbd_1.jpg?max_age=2592000",
+        "https://y.qq.com/music/photo_new/T002R300x300M000000VyVT4015Uzb_1.jpg?max_age=2592000"
+    ];
+
+    // 渐变背景数组
+    const gradients = [
+        "linear-gradient(49deg, #2b3d47, #a81a0c, #3233af, #ce7209)",
+        "linear-gradient(49deg, #8707f6, #23445e, #139037, #3717ff)",
+        "linear-gradient(49deg, #edb851, #8a5e2a, #6a3f1d, #d1a94a)",
+    ];
+    // 歌曲标题数组
+    const songTitles = ["睡前那句晚安", "花儿开在我心里", "芦中埋剑","屋顶的月光（影视剧《你的太阳》插曲）","偷偷放下","人生啊,抱一下","类似爱情 (最近我和你)"];
+    // 艺术家名称数组
+    const artistNames = ["小贱", "窝窝", "河图","小时姑娘","洋澜一","金池","洋澜一"];
+
+    // 当前歌曲索引
+    let currentIndex = 0;
+
+    // 获取DOM元素
+    const singerImg = document.querySelector('.singer'); // 歌手图片
+    const gradientBackground = document.querySelector('.gradient-background.main'); // 主背景
+    const overlayGradientBackground = document.querySelector('.gradient-background.overlay'); // 模糊背景层
+    const prevButton = document.querySelector('.prev'); // 上一首按钮
+    const nextButton = document.querySelector('.next'); // 下一首按钮
+    const songInfo = document.querySelector('.song-info'); // 歌曲信息区域
+    const songTitle = document.querySelector('.song-title'); // 歌曲标题
+    const artistName = document.querySelector('.artist-name'); // 艺术家名称
+
+    /**
+     * updateContent 更新内容函数
+     * @param {number} index - 当前歌曲索引
+     */
+    function updateContent(index) {
+        // 添加淡出效果
+        singerImg.classList.add('fade-out');
+        // 设置延迟，确保动画效果可见
+        setTimeout(() => {
+            // 更新歌手图片
+            singerImg.src = images[index];
+            // 移除淡出效果，添加淡入效果
+            singerImg.classList.remove('fade-out');
+            singerImg.classList.add('fade-in');
+            // 淡入效果完成后移除类
+            setTimeout(() => {
+                singerImg.classList.remove('fade-in');
+            }, 300);
+        }, 300);
+        // 隐藏歌曲信息
+        songInfo.classList.add('hide');
+        // 设置延迟
+        setTimeout(() => {
+            // 更新歌曲信息
+            songTitle.textContent = songTitles[index];
+            artistName.textContent = artistNames[index];
+            // 显示歌曲信息
+            songInfo.classList.remove('hide');
+            songInfo.classList.add('show');
+            // 显示效果完成后移除类
+            setTimeout(() => {
+                songInfo.classList.remove('show');
+            }, 500);
+        }, 300);
+        // 更新主背景渐变
+        gradientBackground.style.background = gradients[index];
+        gradientBackground.style.backgroundSize = "240% 240%";
+        gradientBackground.style.transition = "background 0.5s ease-in-out, background-size 0.5s ease-in-out";
+        // 更新模糊背景层渐变
+        overlayGradientBackground.style.background = gradients[index];
+        overlayGradientBackground.style.backgroundSize = "240% 240%";
+        overlayGradientBackground.style.transition = "background 0.5s ease-in-out, background-size 0.5s ease-in-out";
+    }
+    // 上一首按钮点击事件
+    prevButton.addEventListener('click', () => {
+        // 计算上一个索引（循环）
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        // 更新内容
+        updateContent(currentIndex);
+    });
+    // 下一首按钮点击事件
+    nextButton.addEventListener('click', () => {
+        // 计算下一个索引（循环）
+        currentIndex = (currentIndex + 1) % images.length;
+        // 更新内容
+        updateContent(currentIndex);
+    });
+</script>
+</html>
