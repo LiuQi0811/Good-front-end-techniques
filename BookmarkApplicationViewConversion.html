@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- 基础元数据 -->
+    <meta charset="UTF-8">
+    <!-- 响应式视口设置 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!-- IE兼容模式 -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>书签应用程序 视图转换</title>
+    <style>
+        /* 导入Google字体Poppins */
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+        /* 全局样式重置 */
+        * {
+            outline: none; /* 移除所有元素的轮廓线 */
+            box-sizing: border-box; /* 使用border-box盒模型 */
+        }
+
+        /* CSS变量定义 */
+        :root {
+            --theme-bg-color: #0e0e0e; /* 主题背景色 */
+            --theme-color: #fff; /* 主题文字颜色 */
+            --theme-inactive-color: #5c5c5c; /* 非活动状态颜色 */
+            --body-font: "Poppins", sans-serif; /* 主体字体 */
+            --border-color: #252424; /* 边框颜色 */
+            --card-color: #131a1a; /* 卡片颜色 */
+        }
+
+        /* 页面主体样式 */
+        body {
+            display: flex; /* 使用flex布局 */
+            flex-direction: column; /* 垂直排列子元素 */
+            justify-content: center; /* 垂直居中 */
+            align-items: center; /* 水平居中 */
+            width: 100%; /* 宽度100% */
+            height: 100vh; /* 高度100%视口 */
+            padding: 2em; /* 内边距 */
+            color: var(--theme-color); /* 文字颜色 */
+            font-family: var(--body-font); /* 字体 */
+            background-color: #1b1b1b; /* 背景色 */
+        }
+
+        /* 移动端响应式调整 */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5em; /* 减少内边距 */
+            }
+        }
+
+        /* 应用主容器样式 */
+        .app {
+            background-color: var(--theme-bg-color); /* 背景色 */
+            width: 100%; /* 宽度100% */
+            max-width: 1200px; /* 最大宽度 */
+            height: 92vh; /* 高度 */
+            max-height: 900px; /* 最大高度 */
+            border-radius: 20px; /* 圆角 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            display: flex; /* flex布局 */
+            position: relative; /* 相对定位 */
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            flex-basis: 284px; /* 基础宽度 */
+            display: flex; /* flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            height: 100%; /* 高度100% */
+            flex-shrink: 0; /* 禁止收缩 */
+            overflow-y: auto; /* 垂直滚动 */
+            overflow-x: hidden; /* 隐藏水平滚动 */
+            padding: 50px; /* 内边距 */
+        }
+
+        /* 移动端隐藏侧边栏 */
+        @media (max-width: 480px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        /* 侧边菜单容器 */
+        .sidebar-menu {
+            display: inline-flex; /* 内联flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            padding-top: 64px; /* 顶部内边距 */
+        }
+
+        /* 侧边菜单链接样式 */
+        .sidebar-menu__link {
+            color: var(--theme-inactive-color); /* 默认颜色 */
+            text-decoration: none; /* 无下划线 */
+            font-size: 20px; /* 字体大小 */
+            font-weight: 500; /* 字体粗细 */
+            transition: 0.3s; /* 过渡效果 */
+        }
+
+        /* 菜单项间距 */
+        .sidebar-menu__link + .sidebar-menu__link {
+            margin-top: 24px; /* 顶部外边距 */
+        }
+
+        /* 菜单项悬停和激活状态 */
+        .sidebar-menu__link:hover,
+        .sidebar-menu__link.active {
+            color: var(--theme-color); /* 白色文字 */
+        }
+
+        /* 用户信息区域 */
+        .user {
+            display: flex; /* flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            padding-bottom: 64px; /* 底部内边距 */
+            border-bottom: 1px solid var(--border-color); /* 底部边框 */
+        }
+
+        /* 用户头像样式 */
+        .user-photo {
+            width: 54px; /* 宽度 */
+            height: 54px; /* 高度 */
+            border-radius: 10px; /* 圆角 */
+            object-fit: cover; /* 图片填充方式 */
+            flex-shrink: 0; /* 禁止收缩 */
+            margin-bottom: 20px; /* 底部外边距 */
+        }
+
+        /* 用户邮箱样式 */
+        .user-mail {
+            margin-top: 6px; /* 顶部外边距 */
+            color: var(--theme-inactive-color); /* 文字颜色 */
+            font-size: 14px; /* 字体大小 */
+        }
+
+        /* 切换开关容器 */
+        .toggle {
+            position: relative; /* 相对定位 */
+            display: inline-block; /* 内联块元素 */
+            width: 56px; /* 宽度 */
+            height: 24px; /* 高度 */
+            margin-top: auto; /* 顶部自动外边距 */
+        }
+
+        /* 隐藏原生复选框 */
+        input[type="checkbox"] {
+            opacity: 0; /* 透明 */
+            width: 0; /* 宽度0 */
+            height: 0; /* 高度0 */
+        }
+
+        /* 滑块样式 */
+        .slider {
+            position: absolute; /* 绝对定位 */
+            cursor: pointer; /* 手型指针 */
+            top: 0; /* 顶部对齐 */
+            left: 0; /* 左侧对齐 */
+            right: 0; /* 右侧对齐 */
+            bottom: 0; /* 底部对齐 */
+            background-color: #cacacf; /* 背景色 */
+            transition: 0.3s; /* 过渡效果 */
+            border-radius: 34px; /* 圆角 */
+        }
+
+        /* 滑块圆形按钮 */
+        .slider:before {
+            position: absolute; /* 绝对定位 */
+            content: ""; /* 伪元素内容 */
+            height: 16px; /* 高度 */
+            width: 16px; /* 宽度 */
+            left: 6px; /* 左侧定位 */
+            bottom: 4px; /* 底部定位 */
+            background-color: #fff; /* 白色背景 */
+            transition: 0.4s; /* 过渡效果 */
+            border-radius: 50%; /* 圆形 */
+        }
+
+        /* 复选框选中状态 */
+        input:checked + .slider {
+            background-color: rgba(25, 168, 244, 0.91); /* 背景色 */
+        }
+
+        /* 复选框选中时滑块位置 */
+        input:checked + .slider:before {
+            transform: translateX(28px); /* X轴平移 */
+        }
+
+        /* 主内容区域 */
+        .main {
+            display: flex; /* flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            flex-grow: 1; /* 允许扩展 */
+            padding: 50px 50px 50px 20px; /* 内边距 */
+        }
+
+        /* 移动端主内容调整 */
+        @media (max-width: 480px) {
+            .main {
+                padding: 40px 20px; /* 调整内边距 */
+            }
+        }
+
+        /* 主内容头部 */
+        .main-header {
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            margin-bottom: 20px; /* 底部外边距 */
+        }
+
+        /* 主标题样式 */
+        .main-header__title {
+            font-size: 28px; /* 字体大小 */
+            font-weight: 600; /* 字体粗细 */
+            margin-right: 24px; /* 右侧外边距 */
+        }
+
+        /* 头像组容器 */
+        .main-header__avatars {
+            flex-shrink: 0; /* 禁止收缩 */
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+        }
+
+        /* 移动端隐藏头像组 */
+        @media (max-width: 480px) {
+            .main-header__avatars {
+                display: none;
+            }
+        }
+
+        /* 单个头像样式 */
+        .main-header__avatar {
+            width: 36px; /* 宽度 */
+            height: 36px; /* 高度 */
+            object-fit: cover; /* 图片填充方式 */
+            flex-shrink: 0; /* 禁止收缩 */
+            border-radius: 50%; /* 圆形 */
+            border: 2px solid var(--theme-bg-color); /* 边框 */
+        }
+
+        /* 头像间距，使用负外边距实现重叠效果 */
+        .main-header__avatar + .main-header__avatar {
+            margin-left: -5px;
+        }
+
+        /* 添加按钮样式 */
+        .add-button {
+            background-color: transparent; /* 透明背景 */
+            border: 0; /* 无边框 */
+            padding: 0; /* 无内边距 */
+            color: #d8d8d8; /* 文字颜色 */
+            margin-left: 6px; /* 左侧外边距 */
+            cursor: pointer; /* 手型指针 */
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+        }
+
+        /* 添加按钮图标 */
+        .add-button svg {
+            width: 28px; /* 宽度 */
+            height: 28px; /* 高度 */
+            flex-shrink: 0; /* 禁止收缩 */
+        }
+
+        /* 主添加按钮样式 */
+        .main-header__add {
+            background-color: #ea4e34; /* 背景色 */
+            border: none; /* 无边框 */
+            color: #fff; /* 白色文字 */
+            padding: 4px; /* 内边距 */
+            width: 36px; /* 宽度 */
+            height: 36px; /* 高度 */
+            display: inline-flex; /* 内联flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            border-radius: 10px; /* 圆角 */
+            margin-left: auto; /* 左侧自动外边距 */
+            cursor: pointer; /* 手型指针 */
+            transition: 0.3s; /* 过渡效果 */
+        }
+
+        /* 主添加按钮悬停状态 */
+        .main-header__add:hover {
+            background-color: #e4361a; /* 背景色变深 */
+        }
+
+        /* 主添加按钮图标 */
+        .main-header__add svg {
+            width: 20px; /* 宽度 */
+            height: 20px; /* 高度 */
+        }
+
+        /* 导航菜单容器 */
+        .main-header-nav {
+            display: flex; /* flex布局 */
+            align-items: center; /* 垂直居中 */
+            font-size: 15px; /* 字体大小 */
+            padding: 20px 0; /* 内边距 */
+        }
+
+        /* 导航项样式 */
+        .nav-item {
+            color: var(--theme-inactive-color); /* 默认颜色 */
+            text-decoration: none; /* 无下划线 */
+            padding-bottom: 6px; /* 底部内边距 */
+            transition: 0.3s; /* 过渡效果 */
+            border-bottom: 1px solid transparent; /* 透明底部边框 */
+        }
+
+        /* 导航项悬停状态 */
+        .nav-item:hover {
+            color: #fff; /* 白色文字 */
+        }
+
+        /* 激活的导航项 */
+        .nav-item.active {
+            border-bottom: 1px solid #fff; /* 白色底部边框 */
+            color: #fff; /* 白色文字 */
+        }
+
+        /* 导航项间距 */
+        .main-header-nav * + * {
+            margin-left: 24px; /* 左侧外边距 */
+        }
+
+        /* 主内容网格布局 */
+        .main-content {
+            display: grid; /* 网格布局 */
+            grid-template-columns: repeat(3, 1fr); /* 3列等宽 */
+            gap: 24px; /* 网格间距 */
+        }
+
+        /* 移动端网格调整 */
+        @media (max-width: 480px) {
+            .main-content {
+                gap: 10px; /* 减少间距 */
+            }
+        }
+
+        /* 卡片基础样式 */
+        .card {
+            border-radius: 20px; /* 圆角 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            max-width: 100%; /* 最大宽度 */
+            contain: layout; /* 包含布局 */
+            position: relative; /* 相对定位 */
+            z-index: 1; /* 层级 */
+            cursor: pointer; /* 手型指针 */
+            width: auto; /* 自动宽度 */
+            aspect-ratio: 1/1; /* 宽高比1:1 */
+        }
+
+        /* 移动端卡片调整 */
+        @media (max-width: 480px) {
+            .card {
+                aspect-ratio: 1/1.4; /* 调整宽高比 */
+            }
+        }
+
+        /* 点击后的卡片状态 */
+        .card.clicked {
+            position: absolute; /* 绝对定位 */
+            width: 500px; /* 宽度 */
+            height: 600px; /* 高度 */
+            z-index: 2; /* 更高层级 */
+        }
+
+        /* 卡片1特定样式 */
+        .card.card-1 {
+            background-image: url("https://images.unsplash.com/photo-1567653418876-5bb0e566e1c2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1664&q=80");
+            view-transition-name: c1; /* 视图过渡名称 */
+        }
+
+        /* 卡片2特定样式 */
+        .card.card-2 {
+            view-transition-name: c2; /* 视图过渡名称 */
+            background-image: url("https://images.unsplash.com/photo-1575500221017-ea5e7b7d0e34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1635&q=80");
+        }
+
+        /* 卡片3特定样式 */
+        .card.card-3 {
+            view-transition-name: c3; /* 视图过渡名称 */
+            background-image: url("https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1738&q=80");
+        }
+
+        /* 卡片4特定样式 */
+        .card.card-4 {
+            background-color: #e3dfec; /* 背景色 */
+            view-transition-name: c4; /* 视图过渡名称 */
+            background-image: url("https://images.unsplash.com/photo-1684483871267-739be928cb0e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDJ8fHxlbnwwfHx8fHw%3D&auto=format&fit=crop&w=400&q=60");
+        }
+
+        /* 卡片5特定样式 */
+        .card.card-5 {
+            background-image: url("https://images.unsplash.com/photo-1559181567-c3190ca9959b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1664&q=80");
+            view-transition-name: c5; /* 视图过渡名称 */
+        }
+
+        /* 卡片6特定样式 */
+        .card.card-6 {
+            background-color: #f8d7cd; /* 背景色 */
+            view-transition-name: c6; /* 视图过渡名称 */
+            background-image: url("https://images.unsplash.com/photo-1586788224331-947f68671cf1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80");
+        }
+
+        /* 卡片图片样式 */
+        .card-img {
+            object-fit: cover; /* 图片填充方式 */
+            background-size: cover; /* 背景图填充 */
+            background-position: center; /* 背景图居中 */
+        }
+
+        /* 主卡片特定样式 */
+        .card-main {
+            view-transition-name: card1; /* 视图过渡名称 */
+        }
+
+        /* 激活的卡片状态 */
+        .card.active {
+            grid-column: 1; /* 起始列 */
+            grid-column-end: 3; /* 结束列 */
+            grid-row: 1; /* 起始行 */
+            grid-row-end: 6; /* 结束行 */
+            z-index: 999; /* 最高层级 */
+            aspect-ratio: 1/1; /* 宽高比 */
+        }
+
+        /* 移动端激活卡片调整 */
+        @media (max-width: 480px) {
+            .card.active {
+                grid-column-end: 4; /* 扩展到第4列 */
+                aspect-ratio: 2/1; /* 调整宽高比 */
+            }
+        }
+
+        /* 扩展状态下非激活卡片样式 */
+        .main-content.expanded .card:not(.active) {
+            opacity: 0.4; /* 透明度 */
+            pointer-events: none; /* 禁用指针事件 */
+            aspect-ratio: 3/1; /* 宽高比 */
+            grid-column-start: 3; /* 起始列 */
+        }
+
+        /* 移动端非激活卡片调整 */
+        @media (max-width: 480px) {
+            .main-content.expanded .card:not(.active) {
+                aspect-ratio: 1; /* 正方形 */
+                grid-column-start: auto; /* 自动起始列 */
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 应用主容器 -->
+<div class="app">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <!-- 用户信息区域 -->
+        <div class="user">
+            <!-- 用户头像 -->
+            <img src="https://img2.baidu.com/it/u=3469703925,4273926267&fm=253&app=138&f=JPEG?w=800&h=1200"
+                 alt="user photo" class="user-photo">
+            <!-- 用户名 -->
+            <div class="user-name">云悠悠</div>
+            <!-- 用户邮箱 -->
+            <div class="user-mail">1139642444@email.com</div>
+        </div>
+        <!-- 侧边菜单 -->
+        <div class="sidebar-menu">
+            <a href="#" class="sidebar-menu__link active">设计</a>
+            <a href="#" class="sidebar-menu__link">聊天</a>
+            <a href="#" class="sidebar-menu__link">应用中心</a>
+            <a href="#" class="sidebar-menu__link">日程</a>
+            <a href="#" class="sidebar-menu__link">消息</a>
+            <a href="#" class="sidebar-menu__link">历史记录</a>
+        </div>
+        <!-- 主题切换开关 -->
+        <label class="toggle">
+            <input type="checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <!-- 主内容区域 -->
+    <div class="main">
+        <!-- 主内容头部 -->
+        <div class="main-header">
+            <!-- 主标题 -->
+            <div class="main-header__title">YunYouYou</div>
+            <!-- 头像组 -->
+            <div class="main-header__avatars">
+                <img class="main-header__avatar"
+                     src="https://img1.baidu.com/it/u=3729972923,3604561575&fm=253&app=138&f=JPEG?w=800&h=1422"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://img2.baidu.com/it/u=709373897,1056457552&fm=253&app=138&f=JPEG?w=800&h=1422"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://img1.baidu.com/it/u=3540239335,1746146458&fm=253&app=138&f=JPEG?w=800&h=1440"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://img2.baidu.com/it/u=960495187,2264136796&fm=253&app=138&f=JPEG?w=800&h=1422"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://img2.baidu.com/it/u=2145893523,842713052&fm=253&app=138&f=JPEG?w=800&h=1422"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://img1.baidu.com/it/u=2242593591,1814555397&fm=253&app=138&f=JPEG?w=1437&h=800"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://pic.rmb.bdstatic.com/bjh/3f138cdedb8/240619/ebb06c5f002ed5ac118951bfb92705d0.png"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://b0.bdstatic.com/ugc/ZwgZpB06VZu4DvX_O784GQb3ee1c4c8c800f42837d637303329ba6.jpg"
+                     alt="avatar">
+                <img class="main-header__avatar"
+                     src="https://b0.bdstatic.com/ugc/gi4zSx9Pk_oDx5GViB15VAc95818a150291fcbbd23932f467ce08e.jpg"
+                     alt="avatar">
+                <!-- 添加按钮 -->
+                <button class="add-button">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <!-- 主添加按钮 -->
+            <button class="main-header__add">
+                <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- 导航菜单 -->
+        <div class="main-header-nav">
+            <a href="#" class="nav-item active">全部</a>
+            <a href="#" class="nav-item">视频</a>
+            <a href="#" class="nav-item">笔记</a>
+            <a href="#" class="nav-item">音乐</a>
+            <a href="#" class="nav-item">待办事项</a>
+        </div>
+        <!-- 卡片网格 -->
+        <div class="main-content">
+            <div class="card card-2 card-img"></div>
+            <div class="card card-3 card-img"></div>
+            <div class="card card-img card-1 card-main"></div>
+            <div class="card card-4 card-img"></div>
+            <div class="card card-img card-5"></div>
+            <div class="card card-6 card-img"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    // 获取所有侧边菜单项
+    const menuItems = document.querySelectorAll(".sidebar-menu__link");
+    // 获取所有导航项
+    const navItems = document.querySelectorAll(".nav-item");
+
+    // 为每个侧边菜单项添加点击事件
+    menuItems.forEach((menuItem) => {
+        menuItem.addEventListener("click", (e) => {
+            // 如果点击的不是当前活动项
+            if (!e.target.classList.contains("active")) {
+                // 移除当前活动项的active类
+                document
+                    .querySelector(".sidebar-menu__link.active")
+                    .classList.remove("active");
+                // 为点击项添加active类
+                e.target.classList.add("active");
+            }
+        });
+    });
+
+    // 为每个导航项添加点击事件
+    navItems.forEach((navItem) => {
+        navItem.addEventListener("click", (e) => {
+            // 如果点击的不是当前活动项
+            if (!e.target.classList.contains("active")) {
+                // 移除当前活动项的active类
+                document.querySelector(".nav-item.active").classList.remove("active");
+                // 为点击项添加active类
+                e.target.classList.add("active");
+            }
+        });
+    });
+
+    // 获取所有卡片和主内容区域
+    const cards = document.querySelectorAll(".card");
+    const mainContent = document.querySelector(".main-content");
+
+    // 为每个卡片添加点击事件
+    cards.forEach((card) => {
+        card.addEventListener("click", () => {
+            // 使用视图过渡API
+            document.startViewTransition(() => {
+                // 如果卡片不是激活状态
+                if (!card.classList.contains('active')) {
+                    // 添加扩展类
+                    mainContent.classList.add("expanded");
+                    // 添加激活类
+                    card.classList.add("active");
+                } else {
+                    // 移除激活类
+                    card.classList.remove("active");
+                    // 移除扩展类
+                    mainContent.classList.remove("expanded");
+                }
+            });
+        });
+    });
+
+    // 获取切换开关元素
+    const toggle = document.querySelector(".toggle input[type='checkbox']");
+    toggle.addEventListener("change", (e) => {
+        // 获取当前状态
+        const isChecked = e.target.checked;
+
+        // 根据状态执行不同操作
+        if (isChecked) {
+            alert("开关已打开");
+        } else {
+            alert("开关已关闭");
+        }
+    });
+</script>
+</html>
