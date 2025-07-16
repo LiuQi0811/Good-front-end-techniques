@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- 基础元信息 -->
+    <meta charset="UTF-8">
+    <!-- 响应式视口设置 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>液体转场 趟水效应效果</title>
+
+    <!-- 引入必要的JS库 -->
+    <!-- PIXI.js - 用于WebGL渲染的2D引擎 -->
+    <script src="https://cdn.jsdelivr.net/gh/hmongouachon/rgbKineticSlider/js/libs/pixi.min.js"></script>
+    <!-- RGB滑动效果主库 -->
+    <script src="https://cdn.jsdelivr.net/gh/hmongouachon/rgbKineticSlider/js/rgbKineticSlider.js"></script>
+    <!-- PIXI滤镜扩展 -->
+    <script src="https://cdn.jsdelivr.net/gh/hmongouachon/rgbKineticSlider/js/libs/pixi-filters.min.js"></script>
+    <!-- 图片加载检测库 -->
+    <script src="https://cdn.jsdelivr.net/gh/hmongouachon/rgbKineticSlider/js/libs/imagesLoaded.pkgd.min.js"></script>
+    <!-- 动画补间库 -->
+    <script src="https://cdn.jsdelivr.net/gh/hmongouachon/rgbKineticSlider/js/libs/TweenMax.min.js"></script>
+
+    <style>
+        /* 导入Google字体 */
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+        /* CSS变量定义 */
+        :root {
+            --body-bg: linear-gradient(-45deg, #4571d8, #21586f, #666b7a, #2b5ea5);
+            --body-font: "Poppins", sans-serif;
+            --ticket-color: #f5f5f5;
+        }
+
+        /* 通用重置样式 */
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* 主体样式 */
+        body {
+            background-image: var(--body-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2em;
+            width: 100%;
+            height: 100vh;
+            background-size: 400% 400%;
+            animation: bg-anim 15s ease infinite; /* 背景渐变动画 */
+        }
+
+        /* 主容器样式 */
+        .container {
+            max-width: 1160px;
+            border-radius: 4px;
+            max-height: 660px;
+            height: 90vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 滑动效果容器 */
+        .rgbKineticSlider {
+            display: block;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* 画布样式 */
+        .rgbKineticSlider canvas {
+            position: absolute;
+            display: block;
+        }
+
+        /* 导航链接样式 */
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            position: absolute;
+            top: 50%;
+            z-index: 1;
+            padding: 20px;
+        }
+
+        /* 导航按钮位置 */
+        nav a.next {
+            right: 40px;
+        }
+        nav a.prev {
+            left: 40px;
+        }
+
+        /* SVG图标大小 */
+        svg {
+            width: 28px;
+        }
+
+        /* 菜单按钮样式 */
+        .menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #f5f5f5;
+        }
+
+        /* 滑动按钮样式 */
+        .slider {
+            border: 1px solid #fff;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, #fff 40%, transparent 0%);
+            background-size: 200% 100%;
+            background-position: right bottom;
+            transition: all 0.4s ease-out;
+            cursor: pointer;
+
+            &:hover {
+                transform: scale(1.5);
+            }
+
+            &.prev {
+                svg {
+                    transform: rotate(-180deg);
+                }
+            }
+        }
+
+        /* 底部内容包装器 */
+        .wrapper {
+            max-width: 900px;
+            width: 88%;
+            top: calc(100% - 160px);
+            right: 50%;
+            transform: translatex(50%);
+            position: absolute;
+            color: var(--ticket-color);
+        }
+
+        /* 分隔线样式 */
+        .separator {
+            border: 1px solid #fdfdfe;
+        }
+
+        /* 分隔线文本 */
+        .separator-text {
+            position: absolute;
+            top: 20px;
+        }
+
+        /* 票卡样式 */
+        .ticket {
+            position: absolute;
+            top: 50px;
+            right: 50%;
+            font-family: var(--body-font);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgb(212 212 212 / 50%);
+            backdrop-filter: blur(5px); /* 毛玻璃效果 */
+            padding: 16px 12px;
+            border-radius: 4px;
+            transform: translatex(calc(50% - 25px));
+
+            .ticket-list {
+                display: flex;
+                align-items: center;
+                padding-right: 16px;
+
+                & + & {
+                    border-left: 1px solid #fdfdfe;
+                    padding-left: 16px;
+                }
+
+                &.depart {
+                    border-left: 0;
+                }
+            }
+
+            .returning {
+                margin-left: 32px;
+            }
+
+            .ticket-text__wrapper {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .ticket-title {
+                font-size: 12px;
+            }
+
+            .ticket-subtitle {
+                text-transform: uppercase;
+                font-size: 15px;
+                font-weight: 500;
+                margin-top: 4px;
+                letter-spacing: 0.08em;
+                white-space: nowrap;
+            }
+
+            svg {
+                width: 20px;
+                margin-left: 60px;
+            }
+
+            .settings {
+                margin: 0;
+            }
+
+            /* 搜索按钮样式 */
+            .search {
+                background-color: #fe6651;
+                position: absolute;
+                right: -54px;
+                height: 100%;
+                width: 64px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 0 4px 4px 0;
+
+                svg {
+                    margin: 0;
+                    width: 20px;
+                }
+            }
+        }
+
+        /* 背景动画关键帧 */
+        @keyframes bg-anim {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* 响应式设计 - 中等屏幕 */
+        @media (max-width: 986px) {
+            .ticket-list:nth-child(3),
+            .ticket-list:nth-child(4) {
+                display: none;
+            }
+        }
+
+        /* 响应式设计 - 小屏幕 */
+        @media (max-width: 800px) {
+            .ticket-list:nth-child(2) {
+                display: none;
+            }
+
+            nav a.next {
+                right: 20px;
+            }
+
+            nav a.prev {
+                left: 20px;
+            }
+        }
+
+        /* 响应式设计 - 超小屏幕 */
+        @media (max-width: 590px) {
+            .ticket-list:nth-child(5),
+            .ticket-list:nth-child(6) {
+                display: none;
+            }
+
+            body {
+                padding: 1em;
+            }
+
+            .slider {
+                width: 26px;
+                height: 26px;
+
+                svg {
+                    width: 20px;
+                }
+
+                &:hover {
+                    transform: scale(1.1);
+                }
+            }
+
+            .main-nav {
+                top: 0;
+                padding: 20px 5px;
+                width: max-content;
+            }
+
+            nav a.next {
+                left: 48px;
+            }
+
+            nav a.prev {
+                left: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 主容器 -->
+<div class="container">
+    <!-- RGB滑动效果容器 -->
+    <div id="rgbKineticSlider" class="rgbKineticSlider"></div>
+
+    <!-- 菜单按钮 -->
+    <a href="#" class="menu">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+            <line x1="4" y1="8" x2="40" y2="8"/>
+            <line x1="0" y1="16" x2="40" y2="16"/>
+        </svg>
+    </a>
+
+    <!-- 底部内容区域 -->
+    <div class="wrapper">
+        <div class="separator"></div>
+        <div class="separator-text">Tours</div>
+
+        <!-- 票卡组件 -->
+        <div class="ticket">
+            <!-- 国家选择 -->
+            <div class="ticket-list">
+                <div class="ticket-text__wrapper">
+                    <span class="ticket-title">国家</span>
+                    <span class="ticket-subtitle">中国</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="feather feather-chevron-down">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </div>
+
+            <!-- 城市选择 -->
+            <div class="ticket-list">
+                <div class="ticket-text__wrapper">
+                    <span class="ticket-title">城市</span>
+                    <span class="ticket-subtitle">徐州</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="feather feather-chevron-down">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </div>
+
+            <!-- 出发日期 -->
+            <div class="ticket-list">
+                <div class="ticket-text__wrapper">
+                    <span class="ticket-title">出发</span>
+                    <span class="ticket-subtitle">6月20日</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="icon icon-tabler icon-tabler-switch-horizontal returning" width="44" height="44"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <polyline points="16 3 20 7 16 11"/>
+                    <line x1="10" y1="7" x2="20" y2="7"/>
+                    <polyline points="8 13 4 17 8 21"/>
+                    <line x1="4" y1="17" x2="13" y2="17"/>
+                </svg>
+            </div>
+
+            <!-- 返回日期 -->
+            <div class="ticket-list depart">
+                <div class="ticket-text__wrapper">
+                    <span class="ticket-title">返回</span>
+                    <span class="ticket-subtitle">6月21日</span>
+                </div>
+            </div>
+
+            <!-- 旅客数量 -->
+            <div class="ticket-list">
+                <div class="ticket-text__wrapper">
+                    <span class="ticket-title">旅行者</span>
+                    <span class="ticket-subtitle">舒克,贝塔</span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     class="feather feather-chevron-down">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+            </div>
+
+            <!-- 设置按钮 -->
+            <div class="ticket-list">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="icon icon-tabler icon-tabler-adjustments-horizontal settings" width="44" height="44"
+                     viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <circle cx="14" cy="6" r="2"/>
+                    <line x1="4" y1="6" x2="12" y2="6"/>
+                    <line x1="16" y1="6" x2="20" y2="6"/>
+                    <circle cx="8" cy="12" r="2"/>
+                    <line x1="4" y1="12" x2="6" y2="12"/>
+                    <line x1="10" y1="12" x2="20" y2="12"/>
+                    <circle cx="17" cy="18" r="2"/>
+                    <line x1="4" y1="18" x2="15" y2="18"/>
+                    <line x1="19" y1="18" x2="20" y2="18"/>
+                </svg>
+            </div>
+
+            <!-- 搜索按钮 -->
+            <div class="search">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" viewBox="0 0 24 24"
+                     stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                    <circle cx="10" cy="10" r="7"/>
+                    <line x1="21" y1="21" x2="15" y2="15"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导航按钮 -->
+    <nav>
+        <a href="#" class="main-nav prev" data-nav="previous">
+            <div class="slider prev">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                </svg>
+            </div>
+        </a>
+        <a href="#" class="main-nav next" data-nav="next">
+            <div class="slider next">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                          d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                </svg>
+            </div>
+        </a>
+    </nav>
+</div>
+</body>
+
+<script>
+    // RGB滑动效果初始化配置
+    // 图片来源: Unsplash
+    const images = [
+        "https://images.unsplash.com/photo-1636537511494-c3e558e0702b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80",
+        "https://images.unsplash.com/photo-1468436385273-8abca6dfd8d3?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1705&q=80",
+        "https://images.unsplash.com/photo-1493707553966-283afac8c358?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80",
+        "https://images.unsplash.com/photo-1508189860359-777d945909ef?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80",
+    ];
+
+    // 每张图片对应的标题和副标题
+    const texts = [
+        ["伊斯坦布尔", "\"踏上你人生中最伟大的旅程\""],
+        ["阿姆斯特丹", "\"我们拍下照片，作为回到过去的一刻的回程票\""],
+        ["巴黎", "\"旅行——它让你无言以对，然后把你变成一个讲故事的人\""],
+        ["瑞典", "\"每年去一次你从未去过的地方\""]
+    ];
+
+    // 初始化RGB滑动效果
+    rgbKineticSlider = new rgbKineticSlider({
+        // 基本配置
+        slideImages: images, // 滑动图片数组
+        itemsTitles: texts,  // 标题和副标题数组
+
+        // 位移贴图配置
+        backgroundDisplacementSprite: "https://i.ibb.co/N246LxD/map-9.jpg", // 背景位移贴图
+        cursorDisplacementSprite: "https://i.ibb.co/KrVr51f/displace-circle.png", // 光标位移贴图
+
+        // 光标效果配置
+        cursorImgEffect: true, // 启用光标图片效果
+        cursorTextEffect: true, // 启用光标文本效果
+        cursorScaleIntensity: 0.65, // 光标缩放强度
+        cursorMomentum: 0.14, // 光标动量效果
+
+        // 滑动配置
+        swipe: true, // 启用手势滑动
+        swipeDistance: window.innerWidth * 0.4, // 滑动触发距离
+        swipeScaleIntensity: 2, // 滑动缩放强度
+
+        // 过渡效果配置
+        slideTransitionDuration: 1, // 过渡动画持续时间(秒)
+        transitionScaleIntensity: 30, // 过渡缩放强度
+        transitionScaleAmplitude: 160, // 过渡缩放幅度
+
+        // 导航配置
+        nav: true, // 启用导航
+        navElement: ".main-nav", // 导航元素选择器
+
+        // 图片RGB效果配置
+        imagesRgbEffect: true, // 启用图片RGB效果
+        imagesRgbIntensity: 0.9, // 图片RGB效果强度
+        navImagesRgbIntensity: 80, // 导航图片RGB效果强度
+
+        // 文本配置
+        textsDisplay: true, // 显示文本
+        textsSubTitleDisplay: true, // 显示副标题
+        textsTiltEffect: true, // 启用文本倾斜效果
+        googleFonts: ["Playfair Display:700", "Roboto:400"], // 使用的Google字体
+        buttonMode: false, // 按钮模式
+        textsRgbEffect: true, // 启用文本RGB效果
+        textsRgbIntensity: 0.03, // 文本RGB效果强度
+        navTextsRgbIntensity: 15, // 导航文本RGB效果强度
+
+        // 文本样式配置
+        textTitleColor: "white", // 标题颜色
+        textTitleSize: 125, // 标题大小(桌面)
+        mobileTextTitleSize: 80, // 标题大小(移动)
+        textSubTitleColor: "white", // 副标题颜色
+        textSubTitleSize: 21, // 副标题大小(桌面)
+        mobileTextSubTitleSize: 16, // 副标题大小(移动)
+        textSubTitleLetterspacing: 2, // 副标题字间距
+        textSubTitleOffsetTop: 90, // 副标题上偏移(桌面)
+        mobileTextSubTitleOffsetTop: 90 // 副标题上偏移(移动)
+    });
+</script>
+</html>
