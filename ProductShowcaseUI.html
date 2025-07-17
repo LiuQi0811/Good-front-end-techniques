@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- 基础元信息 -->
+    <meta charset="UTF-8">
+    <!-- 响应式视口设置 -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!-- IE兼容模式 -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>产品展示UI效果图</title>
+    <!-- 引入Swiper轮播图库 -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <link href="https://unpkg.com/swiper/swiper-bundle.min.css" rel="stylesheet"/>
+    <style>
+        /* 导入Google字体 */
+        @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap");
+
+        /* CSS变量定义 */
+        :root {
+            --body-color: #2c2d2a; /* 主文本颜色 */
+            --savanna-bg: #e9bf8b; /* 草原主题背景色 */
+            --beach-bg: #e7dfcf; /* 沙滩主题背景色 */
+            --glacier-bg: #b6d6c8; /* 冰川主题背景色 */
+            --coral-bg: #e86357; /* 珊瑚主题背景色 */
+            --arrow-fill: #333231; /* 箭头颜色 */
+            --body-font: "Montserrat", sans-serif; /* 正文字体 */
+            --italic-font: "EB Garamond", serif; /* 斜体/标题字体 */
+        }
+
+        /* 通用样式重置 */
+        * {
+            box-sizing: border-box; /* 盒模型计算方式 */
+            outline: none; /* 去除焦点轮廓 */
+        }
+
+        /* 图片响应式设置 */
+        img {
+            max-width: 100%; /* 图片最大宽度限制 */
+        }
+
+        /* 链接样式 */
+        a {
+            text-decoration: none; /* 去除下划线 */
+            color: var(--body-color); /* 使用CSS变量颜色 */
+        }
+
+        /* 标题边距重置 */
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        /* 主体样式 */
+        body {
+            font-family: var(--body-font); /* 使用定义的正文字体 */
+            background-color: #1d1e20; /* 深色背景 */
+            display: flex;
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            flex-direction: column; /* 垂直排列 */
+            padding: 2em;
+            width: 100%;
+            height: 100vh; /* 全视口高度 */
+            color: var(--body-color); /* 文本颜色 */
+        }
+
+        /* 移动端响应式调整 */
+        @media (max-width: 480px) {
+            body {
+                padding: 0; /* 小屏幕去除内边距 */
+            }
+        }
+
+        /* 主容器样式 */
+        .container {
+            max-width: 1100px; /* 最大宽度限制 */
+            border-radius: 4px; /* 圆角边框 */
+            max-height: 680px; /* 最大高度限制 */
+            height: 90vh; /* 视口高度的90% */
+            width: 100%;
+            display: flex;
+            flex-direction: column; /* 垂直布局 */
+            scroll-behavior: smooth; /* 平滑滚动 */
+            background-color: #e6decf; /* 默认背景色 */
+            padding: 0 30px; /* 左右内边距 */
+            overflow-y: auto; /* 垂直滚动 */
+            overflow-x: hidden; /* 隐藏水平滚动 */
+            position: relative; /* 相对定位 */
+        }
+
+        /* 移动端容器调整 */
+        @media (max-width: 480px) {
+            .container {
+                height: 100%; /* 全高度 */
+                max-height: 100%; /* 取消最大高度限制 */
+            }
+        }
+
+        /* Logo样式 */
+        .logo {
+            width: 116px;  /* 固定宽度 */
+        }
+
+        /* 头部导航栏样式 */
+        .header {
+            display: flex;
+            align-items: center; /* 垂直居中 */
+            height: 62px; /* 固定高度 */
+            width: 100%;
+            white-space: nowrap; /* 防止换行 */
+            flex-shrink: 0; /* 禁止收缩 */
+            font-weight: 600;
+            font-size: 15px;
+            border-bottom: 1px solid rgba(44, 45, 42, 0.25); /* 底部边框 */
+            position: sticky; /* 粘性定位 */
+            top: 0; /* 固定在顶部 */
+            left: 0;
+            background-color: var(--beach-bg); /* 默认背景色 */
+            z-index: 6; /* 层级设置 */
+        }
+
+        /* 小屏幕头部调整 */
+        @media (max-width: 575px) {
+            .header {
+                width: calc(100% + 20px); /* 宽度调整 */
+                margin-left: -10px; /* 负边距补偿 */
+            }
+        }
+
+        /* 导航菜单样式 */
+        .header-menu {
+            display: flex;
+            align-items: center;
+            margin-left: auto; /* 右对齐 */
+        }
+
+        /* 中等屏幕隐藏菜单 */
+        @media screen and (max-width: 740px) {
+            .header-menu {
+                display: none; /* 隐藏导航菜单 */
+            }
+        }
+
+        /* 菜单项间距 */
+        .header-menu a:not(:first-child) {
+            margin-left: 30px; /* 菜单项间距 */
+        }
+
+        /* 菜单图标样式 */
+        .header .menu-icon {
+            display: flex;
+            align-items: center;
+            margin-right: 20px; /* 右边距 */
+        }
+
+        /* 菜单图标SVG大小 */
+        .header .menu-icon svg {
+            width: 22px;
+        }
+
+        /* 头部图标容器 */
+        .header-icons {
+            margin-left: auto; /* 右对齐 */
+            display: flex;
+            align-items: center;
+        }
+
+        /* 头部图标SVG大小 */
+        .header-icons svg {
+            width: 18px;
+        }
+
+        /* 图标间距 */
+        .header-icons svg:not(:last-child) {
+            margin-right: 20px;
+        }
+
+        /* 左侧内容区域 */
+        .left-side {
+            display: flex;
+            flex-direction: column; /* 垂直布局 */
+            justify-content: space-between; /* 两端对齐 */
+            max-width: 320px; /* 最大宽度限制 */
+        }
+
+        /* 中等屏幕左侧区域调整 */
+        @media screen and (max-width: 930px) {
+            .left-side {
+                text-align: center; /* 文字居中 */
+                max-width: 450px; /* 调整最大宽度 */
+            }
+        }
+
+        /* Swiper容器样式 */
+        .mySwiper {
+            display: flex;
+            flex-grow: 1; /* 填充剩余空间 */
+            position: relative; /* 相对定位 */
+        }
+
+        /* 主要内容区域 */
+        .main {
+            padding: 42px 0 30px; /* 上下内边距 */
+            display: flex;
+            flex-grow: 1; /* 填充剩余空间 */
+            position: relative;
+        }
+
+        /* 中等屏幕主内容调整 */
+        @media screen and (max-width: 930px) {
+            .main {
+                flex-direction: column-reverse; /* 垂直反向排列 */
+                align-items: center; /* 水平居中 */
+                justify-content: center; /* 垂直居中 */
+            }
+        }
+
+        /* 主标题样式 */
+        .main-header {
+            text-transform: uppercase; /* 大写字母 */
+            font-size: 14px;
+            letter-spacing: 4px; /* 字间距 */
+            font-weight: 600;
+            transition-delay: 0.2s; /* 动画延迟 */
+        }
+
+        /* 大标题样式 */
+        .main-title {
+            font-family: var(--italic-font); /* 使用斜体字体 */
+            font-size: 100px;
+            font-weight: 400;
+            margin-top: 10px;
+            line-height: 1em; /* 行高 */
+            transition-delay: 0.3s; /* 动画延迟 */
+        }
+
+        /* 副标题样式 */
+        .main-subtitle {
+            font-family: var(--italic-font);
+            font-weight: 400;
+            font-size: 32px;
+            margin-top: 14px;
+            margin-bottom: 60px;
+            transition-delay: 0.4s; /* 动画延迟 */
+        }
+
+        /* 内容标题样式 */
+        .main-content__title {
+            font-size: 26px;
+            font-family: var(--italic-font);
+            font-style: italic; /* 斜体 */
+            margin-bottom: 14px;
+            transition-delay: 0.2s; /* 动画延迟 */
+        }
+
+        /* 内容副标题样式 */
+        .main-content__subtitle {
+            font-size: 14px;
+            line-height: 1.5; /* 1.5倍行高 */
+            margin-bottom: 24px;
+            letter-spacing: -0.01em; /* 字间距 */
+            transition-delay: 0.3s; /* 动画延迟 */
+        }
+
+        /* 更多菜单样式 */
+        .main-content .more-menu {
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition-delay: 0.4s; /* 动画延迟 */
+        }
+
+        /* 中等屏幕更多菜单调整 */
+        @media screen and (max-width: 930px) {
+            .main-content .more-menu {
+                justify-content: center; /* 水平居中 */
+            }
+        }
+
+        /* 更多菜单图标 */
+        .main-content .more-menu svg {
+            width: 28px;
+            height: 18px;
+            margin-left: 10px; /* 左边距 */
+        }
+
+        /* 中间区域样式 */
+        .center {
+            display: flex;
+            margin-left: 120px; /* 左边距 */
+            position: relative;
+            flex-shrink: 0; /* 禁止收缩 */
+        }
+
+        /* 中等屏幕中间区域调整 */
+        @media screen and (max-width: 930px) {
+            .center {
+                margin-left: 0; /* 去除左边距 */
+                margin-bottom: 56px; /* 底部外边距 */
+            }
+        }
+
+        /* 瓶子背景图样式 */
+        .center .bottle-bg {
+            width: 320px;
+            height: 450px;
+            object-fit: cover; /* 图片填充方式 */
+            border-radius: 160px; /* 圆形边框 */
+        }
+
+        /* 中等屏幕瓶子背景调整 */
+        @media screen and (max-width: 930px) {
+            .center .bottle-bg {
+                width: 260px;
+                height: 390px;
+            }
+        }
+
+        /* 小屏幕瓶子背景调整 */
+        @media screen and (max-width: 575px) {
+            .center .bottle-bg {
+                width: 220px;
+                height: 340px;
+            }
+        }
+
+        /* 瓶子图片样式 */
+        .center .bottle-img {
+            position: absolute; /* 绝对定位 */
+            top: 25%; /* 顶部定位 */
+            left: 0;
+            transform: scale(1.6); /* 缩放比例 */
+        }
+
+        /* Swiper分页器样式 */
+        .swiper-pagination {
+            position: absolute;
+            right: 30px; /* 右侧定位 */
+            left: auto;
+            top: 100px; /* 顶部定位 */
+            width: auto;
+            bottom: auto;
+            z-index: 2; /* 层级 */
+            font-size: 14px;
+            font-family: var(--body-font);
+            font-weight: 500;
+        }
+
+        /* 按钮容器样式 */
+        .button-wrapper {
+            position: absolute;
+            right: 30px;  /* 右侧定位 */
+            bottom: 20px; /* 底部定位 */
+            z-index: 1; /* 层级 */
+            display: flex;
+            align-items: center;
+        }
+
+        /* 中等屏幕按钮容器调整 */
+        @media screen and (max-width: 930px) {
+            .button-wrapper {
+                top: 0; /* 顶部定位 */
+                left: 0; /* 左侧定位 */
+                width: 100%; /* 全宽度 */
+                justify-content: space-between; /* 两端对齐 */
+                padding: 0 60px; /* 左右内边距 */
+            }
+        }
+
+        /* 小屏幕按钮容器调整 */
+        @media screen and (max-width: 575px) {
+            .button-wrapper {
+                padding: 0 20px; /* 调整内边距 */
+            }
+        }
+
+        /* 按钮图标大小 */
+        .button-wrapper svg {
+            width: 28px;
+        }
+
+        /* Swiper按钮基础样式 */
+        .button-wrapper .swiper-button {
+            border: 1px solid var(--body-color); /* 边框 */
+            border-radius: 50%; /* 圆形 */
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, var(--body-color) 40%, transparent 0%); /* 渐变背景 */
+            background-size: 200% 100%; /* 背景大小 */
+            background-position: right bottom; /* 背景位置 */
+            transition: all 0.3s ease-out; /* 过渡效果 */
+            cursor: pointer; /* 手型指针 */
+        }
+
+        /* 按钮间距 */
+        .button-wrapper .swiper-button + .swiper-button {
+            margin-left: 16px;
+        }
+
+        /* 中等屏幕按钮间距调整 */
+        @media screen and (max-width: 930px) {
+            .button-wrapper .swiper-button + .swiper-button {
+                margin-left: 0;
+            }
+        }
+
+        /* 按钮悬停效果 */
+        .button-wrapper .swiper-button:hover {
+            background-color: var(--body-color); /* 背景色变化 */
+            background-position: left bottom; /* 背景位置变化 */
+        }
+
+        /* 按钮悬停图标颜色变化 */
+        .button-wrapper .swiper-button:hover svg {
+            stroke: #fff; /* 白色描边 */
+        }
+
+        /* 上一页按钮特殊样式 */
+        .button-wrapper .swiper-prev-button {
+            background: linear-gradient(to left, var(--body-color) 40%, transparent 0%); /* 反向渐变 */
+            background-size: 200% 100%;
+            background-position: left bottom;
+            transition: all 0.3s ease-out;
+        }
+
+        /* 上一页按钮图标旋转 */
+        .button-wrapper .swiper-prev-button svg {
+            transform: rotate(-180deg); /* 180度旋转 */
+        }
+
+        /* 上一页按钮悬停效果 */
+        .button-wrapper .swiper-prev-button:hover {
+            background-position: right bottom; /* 背景位置变化 */
+        }
+
+        /* Swiper幻灯片初始状态 */
+        .swiper-slide {
+            opacity: 0 !important; /* 初始透明 */
+            transition: 0.4s; /* 过渡效果 */
+        }
+
+        /* 活动幻灯片状态 */
+        .swiper-slide-active {
+            opacity: 1 !important; /* 完全不透明 */
+        }
+
+        /* 幻灯片内容初始状态 */
+        .swiper-slide .main-wrapper > *,
+        .swiper-slide .main-content > * {
+            transform: translateY(-30px); /* 上移30px */
+            opacity: 0; /* 透明 */
+            transition-duration: 0.8s; /* 过渡时间 */
+        }
+
+        /* 活动幻灯片内容状态 */
+        .swiper-slide-active .main-wrapper > *,
+        .swiper-slide-active .main-content > * {
+            transform: none; /* 重置变换 */
+            opacity: 1; /* 完全不透明 */
+        }
+
+        /* 瓶子背景图初始状态 */
+        .swiper-slide .bottle-bg {
+            transition-duration: 0.6s; /* 过渡时间 */
+            opacity: 0; /* 透明 */
+            object-position: 60%; /* 图片位置 */
+        }
+
+        /* 活动幻灯片瓶子背景图状态 */
+        .swiper-slide-active .bottle-bg {
+            opacity: 1; /* 完全不透明 */
+            transform: none; /* 重置变换 */
+            object-position: 50%; /* 图片居中 */
+        }
+
+        /* 瓶子图片初始状态 */
+        .swiper-slide .bottle-img {
+            transition-duration: 0.8s; /* 过渡时间 */
+            transform: scale(1.2); /* 缩放1.2倍 */
+            opacity: 0; /* 透明 */
+        }
+
+        /* 活动幻灯片瓶子图片状态 */
+        .swiper-slide-active .bottle-img {
+            opacity: 1; /* 完全不透明 */
+            transform: scale(1.6); /* 缩放1.6倍 */
+        }
+
+        /* 第一张幻灯片主题样式 */
+        [data-sld="1"] .container,
+        [data-sld="1"] .header {
+            background-color: var(--savanna-bg); /* 草原背景色 */
+        }
+
+        /* 第二张幻灯片主题样式 */
+        [data-sld="2"] .container,
+        [data-sld="2"] .header {
+            background-color: var(--glacier-bg); /* 冰川背景色 */
+        }
+
+        /* 第三张幻灯片主题样式 */
+        [data-sld="3"] .container,
+        [data-sld="3"] .header {
+            background-color: var(--coral-bg); /* 珊瑚背景色 */
+        }
+    </style>
+</head>
+<body>
+<!--
+  主容器 - 包含整个页面内容
+  设置最大宽度、圆角、背景色等样式
+  采用弹性布局，垂直方向排列
+-->
+<div class="container">
+    <!--
+      头部导航栏 - 固定在顶部
+      包含菜单图标、logo、导航链接和功能图标
+      背景色会根据当前幻灯片变化
+    -->
+    <div class="header">
+        <!--
+           菜单图标 - 汉堡菜单
+           使用SVG图标实现，点击可展开侧边栏
+         -->
+        <a class="menu-icon" href="#">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/>
+            </svg>
+        </a>
+        <!--
+          Logo - 品牌标识
+          使用Shopify CDN上的图片资源
+        -->
+        <img class="logo"
+             src="https://cdn.shopify.com/s/files/1/0689/1443/files/CLOSCA-LOGO-WEB-BLACK_130x@2x.png?v=1559116993"/>
+        <!--
+          导航菜单 - 主要产品分类链接
+          在移动端会隐藏，通过菜单图标展开
+        -->
+        <div class="header-menu">
+            <a href="#">护肤膜</a>
+            <a href="#">防护帽</a>
+            <a href="#">水杯</a>
+            <a href="#">配饰</a>
+        </div>
+        <!--
+         功能图标区 - 包含搜索、用户和购物车图标
+         使用SVG实现，支持高分辨率显示
+       -->
+        <div class="header-icons">
+            <!-- 搜索图标 -->
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <!-- 用户图标 -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M437.02 330.98c-27.883-27.882-61.071-48.523-97.281-61.018C378.521 243.251 404 198.548 404 148 404 66.393 337.607 0 256 0S108 66.393 108 148c0 50.548 25.479 95.251 64.262 121.962-36.21 12.495-69.398 33.136-97.281 61.018C26.629 379.333 0 443.62 0 512h40c0-119.103 96.897-216 216-216s216 96.897 216 216h40c0-68.38-26.629-132.667-74.98-181.02zM256 256c-59.551 0-108-48.448-108-108S196.449 40 256 40s108 48.448 108 108-48.449 108-108 108z"/>
+            </svg>
+            <!-- 购物车图标 -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 208.955 208.955">
+                <path d="M190.85 200.227L178.135 58.626a7.5 7.5 0 00-7.47-6.829h-26.221V39.971c0-22.04-17.93-39.971-39.969-39.971-22.038 0-39.966 17.931-39.966 39.971v11.826H38.27a7.5 7.5 0 00-7.47 6.829L18.035 200.784a7.5 7.5 0 007.47 8.17h157.946a7.5 7.5 0 007.399-8.727zM79.509 39.971c0-13.769 11.2-24.971 24.967-24.971 13.768 0 24.969 11.202 24.969 24.971v11.826H79.509V39.971zm-45.8 153.984L45.127 66.797h19.382v13.412a7.5 7.5 0 007.5 7.5 7.5 7.5 0 007.5-7.5V66.797h49.936v13.412a7.5 7.5 0 007.5 7.5 7.5 7.5 0 007.5-7.5V66.797h19.364l11.418 127.158H33.709z"/>
+            </svg>
+        </div>
+    </div>
+    <!--
+      Swiper轮播图容器
+      使用Swiper.js实现产品轮播效果
+      包含4个不同主题的产品幻灯片
+    -->
+    <div class="mySwiper">
+        <!-- Swiper包裹层 -->
+        <div class="main-wrapper swiper-wrapper">
+            <!--
+              第一张幻灯片 - 沙滩主题
+              包含左侧文字内容和右侧产品图片
+            -->
+            <div class="main swiper-slide" id="beach">
+                <!-- 左侧内容区域 -->
+                <div class="left-side">
+                    <!-- 主标题区域 -->
+                    <div class="main-wrapper">
+                        <h3 class="main-header">克洛斯卡瓶</h3>
+                        <h1 class="main-title">沙滩</h1>
+                        <h2 class="main-subtitle">€ 39.90</h2>
+                    </div>
+                    <!-- 产品描述和购买按钮 -->
+                    <div class="main-content">
+                        <div class="main-content__title">20年后，我们海洋中的塑料可能比鱼类还多。
+                        </div>
+                        <div class="main-content__subtitle">
+                            塑料污染每年伤害超过10万只海洋动物。一个塑料瓶大约需要450年才能分解。
+                        </div>
+                        <div class="more-menu">
+                            现在购买
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.7"
+                                 stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="-5" y1="12" x2="19" y2="12"/>
+                                <line x1="15" y1="16" x2="19" y2="12"/>
+                                <line x1="15" y1="8" x2="19" y2="12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右侧产品图片区域 -->
+                <div class="center">
+                    <div class="right-side__img">
+                        <!-- 背景图片 - 沙滩场景 -->
+                        <img class="bottle-bg"
+                             src="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=2902&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                             alt="">
+                        <!-- 产品图片 - 水瓶 -->
+                        <img class="bottle-img"
+                             src="https://fnac.sa/cdn/shop/files/Closca_Bottle_Wave_Sahara_600ml_Close.png?v=1703675684"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 第二张幻灯片 - 草原主题 -->
+            <div class="main swiper-slide" id="savanna">
+                <!-- 左侧内容区域 -->
+                <div class="left-side">
+                    <!-- 主标题区域 -->
+                    <div class="main-wrapper">
+                        <h3 class="main-header">克洛斯卡瓶</h3>
+                        <h1 class="main-title">萨凡纳大草原</h1>
+                        <h2 class="main-subtitle">€ 39.90</h2>
+                    </div>
+                    <!-- 产品描述和购买按钮 -->
+                    <div class="main-content">
+                        <div class="main-content__title">
+                            受荒漠化影响的地球面积大约是印度的11倍。
+                        </div>
+                        <div class="main-content__subtitle">
+                            热带稀树草原就像一个碳汇，从大气中吸收二氧化碳，帮助维持全球气温的平衡。
+                        </div>
+                        <div class="more-menu">
+                            现在购买
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.7"
+                                 stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="-5" y1="12" x2="19" y2="12"/>
+                                <line x1="15" y1="16" x2="19" y2="12"/>
+                                <line x1="15" y1="8" x2="19" y2="12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右侧产品图片区域 -->
+                <div class="center">
+                    <div class="right-side__img">
+                        <!-- 背景图片 - 草原场景 -->
+                        <img class="bottle-bg"
+                             src="https://images.unsplash.com/photo-1613109526778-27605f1f27d2?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80"
+                             alt="">
+                        <!-- 产品图片 - 水瓶 -->
+                        <img class="bottle-img"
+                             src="https://fnac.sa/cdn/shop/files/Closca_Bottle_Wave_Sahara_600ml_Close.png?v=1703675684"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 第三张幻灯片 - 冰川主题 -->
+            <div class="main swiper-slide" id="glacier">
+                <!-- 左侧内容区域 -->
+                <div class="left-side">
+                    <!-- 主标题区域 -->
+                    <div class="main-wrapper">
+                        <h3 class="main-header">克洛斯卡瓶</h3>
+                        <h1 class="main-title">冰川</h1>
+                        <h2 class="main-subtitle">€ 39.90</h2>
+                    </div>
+                    <!-- 产品描述和购买按钮 -->
+                    <div class="main-content">
+                        <div class="main-content__title">
+                            冰川含有世界上75%的淡水。
+                        </div>
+                        <div class="main-content__subtitle">
+                            冰川融化的影响包括生物多样性丧失、海平面上升和淡水短缺等。
+                        </div>
+                        <div class="more-menu">
+                            现在购买
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.7"
+                                 stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="-5" y1="12" x2="19" y2="12"/>
+                                <line x1="15" y1="16" x2="19" y2="12"/>
+                                <line x1="15" y1="8" x2="19" y2="12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右侧产品图片区域 -->
+                <div class="center">
+                    <div class="right-side__img">
+                        <!-- 背景图片 - 冰川场景 -->
+                        <img class="bottle-bg"
+                             src="https://www.discover-the-world.com/app/uploads/2018/05/chile-patagonia-calving-glacier-is-1150x863-c-default.jpg"
+                             alt="">
+                        <!-- 产品图片 - 水瓶 -->
+                        <img class="bottle-img"
+                             src="https://gomagcdn.ro/domains/alty.ro/files/product/original/sticla-reutilizabila-apa-closca-glacier-copie-848-7049.png"/>
+                    </div>
+                </div>
+            </div>
+            <!-- 第四张幻灯片 - 珊瑚主题 -->
+            <div class="main swiper-slide" id="coral">
+                <!-- 左侧内容区域 -->
+                <div class="left-side">
+                    <!-- 主标题区域 -->
+                    <div class="main-wrapper">
+                        <h3 class="main-header">克洛斯卡瓶</h3>
+                        <h1 class="main-title">珊瑚</h1>
+                        <h2 class="main-subtitle">€ 39.90</h2>
+                    </div>
+                    <!-- 产品描述和购买按钮 -->
+                    <div class="main-content">
+                        <div class="main-content__title">
+                            到2030年，我们将失去60%的珊瑚礁。
+                        </div>
+                        <div class="main-content__subtitle">
+                            珊瑚礁对人类至关重要，因为它们保护着海岸线，是数千种海洋物种的营养来源和栖息地。
+                        </div>
+                        <div class="more-menu">
+                            现在购买
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.7"
+                                 stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                <line x1="-5" y1="12" x2="19" y2="12"/>
+                                <line x1="15" y1="16" x2="19" y2="12"/>
+                                <line x1="15" y1="8" x2="19" y2="12"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- 右侧产品图片区域 -->
+                <div class="center">
+                    <div class="right-side__img">
+                        <!-- 背景图片 - 珊瑚场景 -->
+                        <img class="bottle-bg"
+                             src="https://images.unsplash.com/photo-1546500840-ae38253aba9b?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=3260&q=80"
+                             alt="">
+                        <!-- 产品图片 - 水瓶 -->
+                        <img class="bottle-img"
+                             src="https://fnac.sa/cdn/shop/files/Closca_Bottle_Wave_Arizona_600ml_Close.png?v=1703675684&width=1946"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--
+      轮播图控制按钮
+      包含上一页和下一页按钮
+    -->
+    <div class="button-wrapper">
+        <!-- 上一页按钮 -->
+        <div class="swiper-button swiper-prev-button">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+        </div>
+        <!-- 下一页按钮 -->
+        <div class="swiper-button swiper-next-button">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+        </div>
+    </div>
+    <!--
+      轮播图分页指示器
+      显示当前幻灯片序号/总数量
+    -->
+    <div class="swiper-pagination"></div>
+</div>
+</body>
+
+<!--
+  JavaScript部分
+  初始化Swiper轮播图并设置相关参数
+-->
+<script>
+    // 初始化Swiper实例
+    var swiper = new Swiper(".mySwiper", {
+        // 导航按钮配置
+        navigation: {
+            nextEl: ".swiper-next-button", // 下一页按钮元素
+            prevEl: ".swiper-prev-button" // 上一页按钮元素
+        },
+        effect: "fade", // 切换效果为淡入淡出
+        loop: "infinite", // 无限循环
+        pagination: {
+            el: ".swiper-pagination",  // 分页器元素
+            type: "fraction", // 分页器类型为分数形式(1/4)
+        }
+    });
+    // 监听幻灯片切换事件
+    swiper.on('slideChange', function (sld) {
+        // 切换时更新body的data-sld属性，用于改变主题颜色
+        document.body.setAttribute("data-sld", sld.realIndex);
+    })
+</script>
+</html>
