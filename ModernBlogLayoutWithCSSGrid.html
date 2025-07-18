@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!--
+    [基础文档结构]
+    文档类型声明，使用HTML5标准
+    语言设置为简体中文，有利于SEO和浏览器识别
+    -->
+    <meta charset="UTF-8">
+    <!--
+    [响应式视口设置]
+    width=device-width - 视口宽度等于设备宽度
+    user-scalable=no - 禁止用户缩放(为了更好的移动端体验)
+    initial-scale=1.0 - 初始缩放比例为1
+    maximum-scale=1.0/minimum-scale=1.0 - 锁定缩放比例
+    -->
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--
+    [IE兼容模式]
+    强制IE使用最新渲染引擎，避免兼容性问题
+    -->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ModernBlogLayoutWithCSSGrid 使用CSS网格的现代博客布局</title>
+    <style>
+        /*
+          [字体导入]
+          从Google Fonts导入三种字体：
+          1. Playfair Display - 用于斜体/强调文本
+          2. Inter - 主要正文字体
+          3. Space Grotesk - 标题字体
+          每种字体都精心选择了字重(400-700不等)
+          */
+        @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+        /*
+         [CSS变量定义]
+         定义全局CSS变量，便于统一管理和主题切换
+         采用设计系统思维，将样式变量集中管理
+         */
+        :root {
+            --title-font: "Space Grotesk", sans-serif; /* 标题字体 - 具有几何感和现代感 */
+            --subtitle-font: "Inter", sans-serif; /* 副标题/正文字体 - 清晰易读的现代无衬线字体 */
+            --italic-font: "Playfair Display", serif; /* 斜体/强调字体 - 优雅的衬线字体 */
+            --blog-bg: #e9e6e4; /* 博客内容区背景色 - 暖灰色调 */
+            --body-bg: #121418; /* 页面背景色 - 深色背景增强对比 */
+            --title-color: #121418; /* 标题颜色 - 与背景形成对比 */
+            --subtitle-color: #161419; /* 副标题颜色 - 略深于标题 */
+            --border-color: #94918f; /* 边框颜色 - 中性灰 */
+        }
+
+        /*
+         [全局样式重置]
+         消除浏览器默认样式差异，确保跨浏览器一致性
+         */
+        * {
+            outline: none; /* 移除焦点轮廓，使用自定义样式替代 */
+            box-sizing: border-box; /* 盒模型设置为border-box，更符合直觉 */
+        }
+
+        /*
+         [HTML元素基础样式]
+         设置根元素的基础样式
+         */
+        html {
+            box-sizing: border-box; /* 继承border-box模型 */
+            -webkit-font-smoothing: antialiased; /* 字体抗锯齿，使文字更清晰 */
+        }
+
+        /*
+         [图片默认样式]
+         确保图片响应式且不会溢出容器
+         */
+        img {
+            max-width: 100%; /* 图片最大宽度不超过容器 */
+        }
+
+        /*
+         [页面主体样式]
+         设置整个页面的基础布局和样式
+         */
+        body {
+            background-color: var(--body-bg); /* 使用CSS变量定义的背景色 */
+            display: flex; /* 启用Flex布局 */
+            font-family: var(--subtitle-font); /* 设置默认字体 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            flex-direction: column; /* 主轴方向为垂直 */
+            width: 100%; /* 全宽 */
+            padding: 0 2em; /* 左右内边距 */
+            font-weight: 400; /* 常规字重 */
+            height: 100vh; /* 视口高度，确保全屏显示 */
+
+            /*
+             [响应式设计 - 移动端适配]
+             768px以下设备的特殊样式
+             */
+            @media screen and (max-width: 768px) {
+                padding: 0; /* 移除左右内边距 */
+            }
+        }
+
+        /*
+         [博客主容器]
+         整个博客内容的主要容器，使用CSS Grid布局
+         精心设计的网格系统，实现复杂的响应式布局
+         */
+        .blog {
+            background-color: var(--blog-bg); /* 内容区背景色 */
+            max-width: 1350px; /* 最大宽度限制 */
+            display: grid; /* 启用Grid布局 */
+            height: 90vh; /* 视口高度的90% */
+            max-height: 800px; /* 最大高度限制 */
+            overflow: hidden; /* 隐藏溢出内容 */
+            grid-template-columns: 15% 20% 35% 30%; /* 四列网格布局比例 */
+            grid-template-rows: 100%; /* 单行布局 */
+            width: 100%; /* 全宽 */
+            padding: 40px 4px; /* 内边距 */
+            position: relative; /* 相对定位，为子元素定位提供上下文 */
+
+            /*
+             [响应式设计 - 中等屏幕]
+             1030px以下设备的网格调整
+             */
+            @media screen and (max-width: 1030px) {
+                grid-template-columns: 20% 50% 30%; /* 调整为三列布局 */
+            }
+
+            /*
+             [响应式设计 - 平板设备]
+             768px以下设备的网格调整
+             */
+            @media screen and (max-width: 768px) {
+                grid-template-columns: 25% 75%; /* 调整为两列布局 */
+                width: 100%; /* 全宽 */
+                max-width: none; /* 移除最大宽度限制 */
+            }
+
+            /*
+             [响应式设计 - 手机设备]
+             560px以下设备的网格调整
+             */
+            @media screen and (max-width: 560px) {
+                grid-template-columns: 100%; /* 单列布局，适应小屏幕 */
+            }
+
+            /*
+             [博客各部分通用样式]
+             定义博客每个部分的共同样式
+             */
+            .blog-part {
+                padding: 0 20px; /* 左右内边距 */
+
+                /*
+                 [分隔线样式]
+                 为除最后一个部分外的所有部分添加右边框
+                 */
+                &:not(:last-child) {
+                    border-right: 1px solid var(--border-color); /* 使用变量定义的颜色 */
+                }
+            }
+
+            /*
+             [博客菜单项样式]
+            导航菜单项的统一样式
+             */
+            .blog-menu {
+                font-size: 22px; /* 字体大小 */
+                text-decoration: none; /* 移除下划线 */
+                color: var(--subtitle-color); /* 文字颜色 */
+                display: flex; /* Flex布局 */
+                letter-spacing: -0.5px; /* 字母间距微调 */
+                align-items: center; /* 垂直居中 */
+
+                /*
+                 [响应式字体大小]
+                 1260px以下设备使用视窗单位
+                 */
+                @media screen and (max-width: 1260px) {
+                    font-size: 1.6vw; /* 基于视窗宽度的字体大小 */
+                }
+
+                /*
+                 [菜单图标样式]
+                 SVG图标的统一样式
+                 */
+                svg {
+                    width: 22px; /* 固定宽度 */
+                    margin-left: 4px; /* 左边距 */
+                }
+
+                /*
+                 [菜单项间距]
+                 相邻菜单项之间的垂直间距
+                 */
+                & + & {
+                    margin-top: 24px; /* 顶部外边距 */
+                }
+
+                /*
+                 [特殊菜单项 - 提及]
+                 底部对齐的特殊菜单项
+                 */
+                &.mention {
+                    margin-top: auto; /* 自动顶部外边距，推到底部 */
+                    font-size: 19px; /* 略小的字体 */
+
+                    @media screen and (max-width: 1260px) {
+                        font-size: 1.4vw; /* 响应式调整 */
+                    }
+                }
+
+                /*
+                 [特殊菜单项 - 订阅]
+                 带有装饰性前缀的菜单项
+                 */
+                &.subscribe {
+                    margin-top: 8px; /* 顶部外边距 */
+                    font-size: 19px; /* 字体大小 */
+                    position: relative; /* 相对定位 */
+
+                    @media screen and (max-width: 1260px) {
+                        font-size: 1.4vw; /* 响应式调整 */
+                    }
+
+                    /*
+                     [装饰性前缀方块]
+                     使用伪元素创建的小方块
+                     */
+                    &:before {
+                        content: ""; /* 必须内容 */
+                        width: 16px; /* 宽度 */
+                        height: 16px; /* 高度 */
+                        background-color: var(--subtitle-color); /* 背景色 */
+                        left: 0; /* 左对齐 */
+                        border-radius: 1px; /* 轻微圆角 */
+                        margin-right: 14px; /* 右边距 */
+                    }
+                }
+
+                /*
+                 [圆形标记的菜单项]
+                 带有圆形前缀的菜单项
+                 */
+                &.rounded {
+
+                    /*
+                     [装饰性前缀圆点]
+                     使用伪元素创建的小圆点
+                     */
+                    &:before {
+                        content: ""; /* 必须内容 */
+                        border-radius: 50%; /* 圆形 */
+                        width: 12px; /* 宽度 */
+                        height: 12px; /* 高度 */
+                        background-color: var(--subtitle-color); /* 背景色 */
+                        margin-right: 12px; /* 右边距 */
+                    }
+                }
+            }
+
+            /*
+             [左侧菜单区域]
+             主导航菜单的容器
+             */
+            .is-menu {
+                display: flex; /* Flex布局 */
+                flex-direction: column; /* 垂直排列 */
+
+                @media screen and (max-width: 1030px) {
+                    display: none; /* 小屏幕隐藏菜单 */
+                }
+            }
+
+            /*
+             [大标题样式]
+             文章大标题的特殊样式
+             */
+            .blog-big__title {
+                font-size: 132px; /* 超大字体 */
+                font-family: var(--title-font); /* 特殊标题字体 */
+                font-weight: 700; /* 加粗 */
+                letter-spacing: -5px; /* 字母间距紧缩 */
+                line-height: 1; /* 行高为1 */
+                margin-bottom: 6px; /* 底部外边距 */
+
+                @media screen and (max-width: 1400px) {
+                    font-size: 120px; /* 稍小字体 */
+                }
+
+                @media screen and (max-width: 1260px) {
+                    font-size: 9vw; /* 视窗单位 */
+                    letter-spacing: -2px; /* 调整字母间距 */
+                }
+
+                @media screen and (max-width: 560px) {
+                    font-size: 36px; /* 手机端更小字体 */
+                    margin-bottom: 12px; /* 调整间距 */
+                }
+            }
+
+            /*
+             [博客头部容器]
+             文章头部区域的容器
+             */
+            .blog-header {
+                display: flex; /* Flex布局 */
+                flex-direction: column; /* 垂直排列 */
+            }
+
+            /*
+             [博客文章样式]
+             单篇文章的容器样式
+             */
+            .blog-article {
+                padding: 0 20px; /* 左右内边距 */
+
+                /*
+                 [文章图片样式]
+                 统一处理文章中的图片
+                 */
+                img {
+                    height: 260px; /* 固定高度 */
+                    max-height: 22vh; /* 最大高度限制 */
+                    width: 100%; /* 全宽 */
+                    object-fit: cover; /* 填充模式 */
+                    filter: grayscale(1); /* 灰度效果，增强设计感 */
+                }
+            }
+        }
+
+        /*
+         [页码样式]
+         文章页码的特殊样式
+         */
+        .page-number {
+            display: flex; /* Flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            justify-content: flex-end; /* 底部对齐 */
+            height: 100%; /* 全高 */
+            font-size: 72px; /* 超大字体 */
+            text-align: center; /* 居中 */
+            letter-spacing: -3px; /* 字母间距 */
+            font-weight: lighter; /* 细体 */
+            font-family: var(--title-font); /* 特殊字体 */
+            border-right: 1px solid var(--border-color); /* 右边框 */
+            white-space: nowrap; /* 防止换行 */
+
+            @media screen and (max-width: 1260px) {
+                font-size: 5vw; /* 响应式调整 */
+            }
+        }
+
+        /*
+         [小标题样式]
+         辅助性小标题的样式
+         */
+        .small-title {
+            border-bottom: 1px solid var(--border-color); /* 底部边框 */
+            margin-bottom: 20px; /* 底部外边距 */
+            padding-bottom: 20px; /* 底部内边距 */
+
+            @media screen and (max-width: 560px) {
+                font-size: 14px; /* 更小字体 */
+                position: absolute; /* 绝对定位 */
+                top: 10px; /* 顶部距离 */
+                right: 24px; /* 右侧距离 */
+                border-bottom: 0; /* 移除边框 */
+            }
+        }
+
+        /*
+         [日期样式]
+         文章日期的布局样式
+         */
+        .date {
+            display: flex; /* Flex布局 */
+            justify-content: flex-end; /* 右对齐 */
+        }
+
+        /*
+         [博客文章内容样式]
+         文章内部元素的详细样式
+         */
+        .blog-article {
+            /*
+             [文章标题]
+             二级标题的样式
+             */
+            h2 {
+                font-size: 26px; /* 字体大小 */
+                font-weight: 500; /* 中等字重 */
+                line-height: 1.2; /* 行高 */
+                margin: 8px 0 8px; /* 外边距 */
+
+                /*
+                 [标题中的特殊文本]
+                 使用斜体字体的部分
+                 */
+                span {
+                    font-family: var(--italic-font); /* 特殊字体 */
+                }
+            }
+
+            /*
+             [段落文本]
+             文章正文段落的样式
+             */
+            p {
+                line-height: 1.5; /* 行高 */
+                margin: 14px 0; /* 外边距 */
+            }
+
+            /*
+             [文章底部链接]
+             "查看更多"链接的样式
+             */
+            a {
+                color: var(--subtitle-color); /* 文字颜色 */
+                text-decoration: none; /* 移除下划线 */
+                font-size: 26px; /* 字体大小 */
+                letter-spacing: -1px; /* 字母间距 */
+                display: flex; /* Flex布局 */
+                justify-content: flex-end; /* 右对齐 */
+                align-items: center; /* 垂直居中 */
+                margin-top: auto; /* 自动顶部外边距，推到底部 */
+                border-top: 1px solid var(--border-color); /* 顶部边框 */
+                padding-top: 14px; /* 顶部内边距 */
+
+                /*
+                 [链接图标]
+                 SVG图标的样式
+                 */
+                svg {
+                    width: 26px; /* 固定宽度 */
+                    margin-right: 10px; /* 右边距 */
+                }
+            }
+        }
+
+        /*
+         [文章详情样式]
+         作者和阅读时间的样式
+         */
+        .blog-detail {
+            display: flex; /* Flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: space-between; /* 两端对齐 */
+            font-size: 14px; /* 字体大小 */
+
+            /*
+             [特殊文本样式]
+             作者姓名的样式
+             */
+            span {
+                font-family: var(--italic-font); /* 斜体字体 */
+            }
+        }
+
+        /*
+         [博客头部内容容器]
+         可滚动区域的特效实现
+         */
+        .blog-header-container {
+            overflow-y: auto; /* 垂直滚动 */
+            overflow-x: hidden; /* 禁止水平滚动 */
+            height: 100%; /* 全高 */
+            display: flex; /* Flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            scroll-snap-type: y mandatory; /* 滚动吸附效果 */
+            border-right: 1px solid var(--border-color); /* 右边框 */
+
+            @media screen and (max-width: 768px) {
+                border-right: 0; /* 小屏幕移除边框 */
+            }
+
+            /*
+             [子元素样式]
+             容器内直接子元素的共同样式
+             */
+            & > * {
+                flex-shrink: 0; /* 禁止收缩 */
+                min-height: 100%; /* 最小高度 */
+                scroll-snap-align: start; /* 滚动吸附点 */
+            }
+
+            /*
+             [非头部文章的特殊样式]
+             内容文章的布局调整
+             */
+            .blog-article:not(.header-article) {
+                flex-grow: 1; /* 允许扩展 */
+                display: flex; /* Flex布局 */
+                flex-direction: column; /* 垂直排列 */
+            }
+        }
+
+        /*
+         [跑马灯样式]
+         滚动公告的视觉效果
+         */
+        marquee {
+            font-size: 20px; /* 字体大小 */
+            background-color: var(--body-bg); /* 背景色 */
+            color: var(--blog-bg); /* 文字颜色 */
+            padding: 6px 0; /* 上下内边距 */
+            width: calc(100% + 44px); /* 扩展宽度 */
+            margin-left: -20px; /* 负边距补偿 */
+            flex-shrink: 0; /* 禁止收缩 */
+
+            /*
+             [跑马灯中的分隔点]
+             使用伪元素创建的分隔圆点
+             */
+            span:before {
+                content: ""; /* 必须内容 */
+                display: inline-block; /* 行内块元素 */
+                border-radius: 50%; /* 圆形 */
+                width: 10px; /* 宽度 */
+                height: 10px; /* 高度 */
+                position: relative; /* 相对定位 */
+                top: -1px; /* 微调垂直位置 */
+                vertical-align: baseline; /* 基线对齐 */
+                background-color: var(--blog-bg); /* 背景色 */
+                margin: 0 16px; /* 左右外边距 */
+            }
+        }
+
+        /*
+         [右侧博客内容区域]
+         侧边栏的容器样式
+         */
+        .blog-right {
+            overflow: auto; /* 允许滚动 */
+            height: calc(100% + 60px); /* 扩展高度 */
+
+            /*
+             [圆形标记文本]
+             带有圆形前缀的文本
+             */
+            .rounded {
+                font-style: italic; /* 斜体 */
+                font-size: 18px; /* 字体大小 */
+
+                /*
+                 [圆形前缀]
+                 使用伪元素创建的小圆点
+                 */
+                &:before {
+                    content: ""; /* 必须内容 */
+                    border-radius: 50%; /* 圆形 */
+                    width: 9px; /* 宽度 */
+                    height: 9px; /* 高度 */
+                    background-color: rgb(22 20 25); /* 背景色 */
+                    margin-right: 6px; /* 右边距 */
+                }
+            }
+        }
+
+        /*
+         [右侧博客标题样式]
+         侧边栏标题的特殊字体
+         */
+        .blog-right-title {
+            font-size: 25px; /* 字体大小 */
+            font-family: var(--italic-font); /* 斜体字体 */
+        }
+
+        /*
+         [右侧博客标题容器]
+         标题区域的布局样式
+         */
+        .blog-right-title-container {
+            display: flex; /* Flex布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: space-between; /* 两端对齐 */
+            border-bottom: 1px solid var(--border-color); /* 底部边框 */
+            margin-bottom: 20px; /* 底部外边距 */
+            padding-bottom: 20px; /* 底部内边距 */
+            margin-top: 100px; /* 顶部外边距 */
+            letter-spacing: -1px; /* 字母间距 */
+
+            @media screen and (max-width: 1400px) {
+                margin-top: 88px; /* 调整间距 */
+            }
+
+            @media screen and (max-width: 1260px) {
+                margin-top: 6vw; /* 视窗单位 */
+            }
+
+            @media screen and (max-width: 1030px) {
+                margin-top: 5vw; /* 视窗单位 */
+            }
+        }
+
+        /*
+         [博客标题日期布局]
+         标题和日期的排列方式
+         */
+        .blog-title-date {
+            display: flex; /* Flex布局 */
+            align-items: baseline; /* 基线对齐 */
+            justify-content: space-between; /* 两端对齐 */
+        }
+
+        /*
+         [右侧博客页码样式]
+         侧边栏页码的特殊样式
+         */
+        .blog-right-page {
+            font-size: 56px; /* 超大字体 */
+            margin-bottom: 16px; /* 底部外边距 */
+            font-family: var(--title-font); /* 特殊字体 */
+
+            /*
+             [右侧博客页面标题]
+             文章标题的样式
+             */
+            .blog-right-page-title {
+                font-family: var(--title-font); /* 继承字体 */
+                font-size: 28px; /* 字体大小 */
+                font-weight: 600; /* 半粗体 */
+                max-width: 16ch; /* 最大字符数限制 */
+                letter-spacing: -2px; /* 字母间距 */
+            }
+
+            /*
+             [右侧博客页面副标题]
+             文章描述的样式
+             */
+            .blog-right-page-subtitle {
+                max-width: 33ch; /* 最大字符数限制 */
+                font-size: 15px; /* 字体大小 */
+                margin-top: 12px; /* 顶部外边距 */
+                line-height: 1.4; /* 行高 */
+            }
+        }
+
+        /*
+         [右侧博客内容容器间距]
+         相邻内容块之间的间距
+         */
+        .blog-right-container + .blog-right-container {
+            margin-top: 40px; /* 顶部外边距 */
+        }
+
+        /*
+         [右侧博客整体布局]
+         侧边栏的主要布局设置
+         */
+        .right-blog {
+            display: flex; /* Flex布局 */
+            flex-direction: column; /* 垂直排列 */
+
+            @media screen and (max-width: 768px) {
+                display: none; /* 小屏幕隐藏侧边栏 */
+            }
+
+            /*
+             [右侧博客菜单]
+             侧边栏菜单的特殊处理
+             */
+            .blog-menu {
+                @media screen and (max-width: 1030px) {
+                    display: none; /* 中等屏幕隐藏 */
+                }
+            }
+        }
+
+        /*
+         [隐藏滚动条]
+         保持界面简洁，隐藏默认滚动条
+         */
+        ::-webkit-scrollbar {
+            display: none; /* 隐藏Webkit浏览器滚动条 */
+        }
+
+        /*
+         [圆形区域样式]
+         装饰性圆形组件的完整样式
+         */
+        .circle {
+            width: 100%; /* 全宽 */
+            aspect-ratio: 1/1; /* 保持1:1宽高比 */
+            border-radius: 50%; /* 圆形 */
+            background-color: var(--body-bg); /* 背景色 */
+            display: flex; /* Flex布局 */
+            align-items: center; /* 垂直居中 */
+            flex-direction: column; /* 垂直排列 */
+            justify-content: center; /* 水平居中 */
+            color: var(--blog-bg); /* 文字颜色 */
+            padding: 20px; /* 内边距 */
+            text-align: center; /* 文本居中 */
+            margin-top: 40px; /* 顶部外边距 */
+
+            /*
+             [圆形区域标题]
+             主标题的样式
+             */
+            .circle-title {
+                font-size: 24px; /* 字体大小 */
+                font-weight: 600; /* 半粗体 */
+                margin-bottom: 12px; /* 底部外边距 */
+                font-family: var(--title-font); /* 特殊字体 */
+
+                @media screen and (max-width: 1030px) {
+                    display: none; /* 中等屏幕隐藏标题 */
+                }
+            }
+
+            /*
+             [圆形区域副标题]
+             描述文本的样式
+             */
+            .circle-subtitle {
+                max-width: 30ch; /* 最大字符数限制 */
+                font-size: 14px; /* 字体大小 */
+                line-height: 1.3; /* 行高 */
+                margin-bottom: 16px; /* 底部外边距 */
+            }
+
+            /*
+             [圆形区域底部文本]
+             装饰性文本的样式
+             */
+            .circle-footer {
+                font-family: var(--italic-font); /* 斜体字体 */
+                font-size: 30px; /* 较大字体 */
+            }
+        }
+
+        /*
+         [粘性博客头部]
+         固定在顶部的头部区域
+         */
+        .blog-is-sticky {
+            @media screen and (max-width: 560px) {
+                display: none; /* 小屏幕隐藏粘性头部 */
+            }
+        }
+
+        /* 超小屏幕适配 (小于560px) */
+        @media screen and (max-width: 560px) {
+            body {
+                height: auto; /* 取消固定高度 */
+                min-height: 100vh; /* 保持最小视口高度 */
+                padding: 0; /* 移除内边距 */
+            }
+
+            .blog {
+                height: auto; /* 自适应高度 */
+                max-height: none; /* 取消最大高度限制 */
+                grid-template-rows: auto auto 1fr; /* 调整行布局 */
+                padding: 20px 12px; /* 调整内边距 */
+            }
+
+            .blog-header-container {
+                height: auto; /* 取消固定高度 */
+                max-height: none; /* 取消最大高度 */
+            }
+
+            .blog-article {
+                padding: 0 12px; /* 调整内边距 */
+            }
+
+            .blog-article img {
+                max-height: 180px; /* 调整图片高度 */
+            }
+
+            .blog-article h2 {
+                font-size: 22px; /* 减小标题字号 */
+            }
+
+            .blog-article a {
+                font-size: 20px; /* 减小链接字号 */
+            }
+
+            .blog-detail {
+                font-size: 12px; /* 减小详情字号 */
+            }
+
+            .blog-article p {
+                font-size: 14px; /* 调整正文字号 */
+                margin: 10px 0; /* 调整段落间距 */
+            }
+
+            .page-number {
+                font-size: 48px; /* 减小页码字号 */
+                padding: 20px 0; /* 调整内边距 */
+            }
+
+            marquee {
+                font-size: 16px; /* 减小跑马灯字号 */
+                width: 100%; /* 调整宽度 */
+                margin-left: 0; /* 移除负边距 */
+            }
+
+            .blog-right-title-container {
+                margin-top: 30px; /* 调整顶部间距 */
+            }
+
+            .blog-right-page {
+                font-size: 36px; /* 减小右侧页码字号 */
+            }
+
+            .blog-right-page-title {
+                font-size: 20px; /* 减小右侧标题字号 */
+            }
+
+            .blog-right-page-subtitle {
+                font-size: 13px; /* 减小右侧副标题字号 */
+            }
+
+            .date{
+                margin-left: 10px;
+            }
+            .rounded{
+                margin: -2px 50px;
+            }
+
+            .circle {
+                margin-top: 30px; /* 调整圆形区域间距 */
+                padding: 15px; /* 调整内边距 */
+            }
+
+            .circle-title {
+                font-size: 20px; /* 减小圆形区域标题字号 */
+            }
+
+            .circle-subtitle {
+                font-size: 12px; /* 减小圆形区域副标题字号 */
+            }
+
+            .circle-footer {
+                font-size: 24px; /* 减小圆形区域底部字号 */
+            }
+        }
+
+        /* 中等屏幕调整 (560px-768px) */
+        @media screen and (min-width: 560px) and (max-width: 768px) {
+            .blog {
+                padding: 30px 15px; /* 调整内边距 */
+            }
+
+            .blog-big__title {
+                font-size: 72px; /* 调整大标题字号 */
+            }
+
+            .blog-article img {
+                max-height: 200px; /* 调整图片高度 */
+            }
+
+            .page-number {
+                font-size: 60px; /* 调整页码字号 */
+            }
+
+            .blog-right-page {
+                font-size: 42px; /* 调整右侧页码字号 */
+            }
+        }
+
+        /* 防止内容溢出 */
+        @media screen and (max-width: 768px) {
+            .blog-header-container > * {
+                min-height: auto; /* 取消最小高度 */
+            }
+
+            .blog-article:not(.header-article) {
+                padding-bottom: 30px; /* 添加底部内边距 */
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="blog">
+    <div class="blog-part is-menu">
+        <a href="#" class="blog-menu">
+            工作
+            <svg fill="none" stroke="currentColor" stroke-width=".7" stroke-linecap="round" stroke-linejoin="round"
+                 class="feather feather-arrow-up-right" viewBox="0 0 24 24">
+                <path d="M7 17L17 7M7 7h10v10"/>
+            </svg>
+        </a>
+        <a href="#" class="blog-menu">广播</a>
+        <a href="#" class="blog-menu">博客</a>
+        <a href="#" class="blog-menu">联系</a>
+        <a href="#" class="blog-menu mention">@杂志目录</a>
+        <a href="#" class="blog-menu subscribe">订阅</a>
+    </div>
+    <div class="blog-header blog-is-sticky">
+        <div class="blog-article header-article">
+            <div class="blog-big__title">个性</div>
+            <div class="blog-menu rounded small-title">置顶</div>
+        </div>
+        <div class="blog-article page-number">
+            NO. 01
+        </div>
+    </div>
+    <div class="blog-header-container">
+        <div class="blog-header">
+            <div class="blog-article header-article">
+                <div class="blog-big__title">Esteem</div>
+                <div class="blog-menu small-title date">12.06.2021</div>
+            </div>
+            <div class="blog-article">
+                <img src="https://images.unsplash.com/photo-1496629062893-b0f566065d44?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjV8fGJsYWNrJTIwYW5kJTIwd2hpdGV8ZW58MHwwfDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+                     alt="">
+                <h2>Sharing The <span>Widespread</span> Acclaim About Motivation</h2>
+                <div class="blog-detail">
+                    <span>By Richard Carnation</span>
+                    <span>5 Min Read</span>
+                </div>
+                <p>《金发女郎》广受好评，评论家们称赞了《海洋》内省的歌词和专辑的非传统风格</p>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-down-right"
+                         viewBox="0 0 24 24">
+                        <path d="M15 10l5 5-5 5"/>
+                        <path d="M4 4v7a4 4 0 004 4h12"/>
+                    </svg>
+                    查看更多
+                </a>
+            </div>
+        </div>
+        <div class="blog-header">
+            <div class="blog-article header-article">
+                <div class="blog-big__title">Love</div>
+                <div class="blog-menu small-title date">12.06.2021</div>
+            </div>
+            <div class="blog-article">
+                <img src="https://images.unsplash.com/photo-1529255484355-cb73c33c04bb?ixid=MnwxMjA3fDB8MHxzZWFyY2h8OTh8fGJsYWNrJTIwYW5kJTIwd2hpdGV8ZW58MHwwfDB8fA%3D%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+                     alt="">
+                <h2>Talking About <span>Vulnerability</span> During Quarantine</h2>
+                <div class="blog-detail">
+                    <span>By Tom Hiddleston</span>
+                    <span>5 Min Read</span>
+                </div>
+                <p>曾多次前往土耳其，评论家们称赞Ocean内省的歌词和专辑的非传统风格</p>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-down-right"
+                         viewBox="0 0 24 24">
+                        <path d="M15 10l5 5-5 5"/>
+                        <path d="M4 4v7a4 4 0 004 4h12"/>
+                    </svg>
+                    查看更多
+                </a>
+            </div>
+        </div>
+        <div class="blog-header">
+            <div class="blog-article header-article">
+                <div class="blog-big__title">Control</div>
+                <div class="blog-menu small-title date">12.06.2021</div>
+            </div>
+            <div class="blog-article">
+                <img src="https://images.unsplash.com/photo-1616248249518-b16013cd4e42?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTkzfHxibGFjayUyMGFuZCUyMHdoaXRlfGVufDB8MHwwfHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+                     alt="">
+                <h2>How 2020 Changed <span>Understanding</span> Of Mental Health</h2>
+                <div class="blog-detail">
+                    <span>By Scarlett Witch</span>
+                    <span>5 Min Read</span>
+                </div>
+                <p>时间决定了不懈的进步，评论家们赞扬了海洋的内省歌词和专辑</p>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-down-right"
+                         viewBox="0 0 24 24">
+                        <path d="M15 10l5 5-5 5"/>
+                        <path d="M4 4v7a4 4 0 004 4h12"/>
+                    </svg>
+                    查看更多
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="blog-part right-blog">
+        <marquee width="100%" direction="left">
+            <span>偶尔你会想念它，听起来会让你哭泣</span>
+            <span>现在在MoMa分享</span>
+            <span>当你孤单你会想起谁</span>
+        </marquee>
+        <div class="blog-right-title-container">
+            <div class="blog-right-title">
+                StyleFeel
+            </div>
+            <div class="blog-menu rounded">查看全部</div>
+        </div>
+        <div class="blog-right">
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">1</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">听</div>
+                <div class="blog-right-page-subtitle">梦醒时分 真的很好听
+                </div>
+            </div>
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">2</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">内省歌词与节拍</div>
+                <div class="blog-right-page-subtitle">
+                    当我们游览苏格兰时，我们在几个自封的hpuse停了下来因为酒店会
+                </div>
+            </div>
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">3</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">灰色的语言：完成单色之美</div>
+                <div class="blog-right-page-subtitle">
+                    内部概念由建筑师工作室构思 Holtrop巧妙地模仿
+                </div>
+            </div>
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">4</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">A24正在推出自己的美容品牌</div>
+                <div class="blog-right-page-subtitle">
+                    《金发女郎》广受好评，评论家们称赞《海洋》 内省歌词与专辑
+                </div>
+            </div>
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">5</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">我国正在发射一颗月球卫星</div>
+                <div class="blog-right-page-subtitle">内部概念由荷兰建筑师工作室构思 Anne Holtrop巧妙地模仿
+                </div>
+            </div>
+            <div class="blog-right-container">
+                <div class="blog-title-date">
+                    <div class="blog-right-page">6</div>
+                    <div class="date">12.06.2021</div>
+                </div>
+                <div class="blog-right-page-title">当你抛弃旧生活时会发生什么</div>
+                <div class="blog-right-page-subtitle">
+                    内部概念由荷兰建筑师工作室构思 Anne Holtrop巧妙地模仿
+                </div>
+            </div>
+            <div class="circle">
+                <div class="circle-title">放下旧生活</div>
+                <div class="circle-subtitle">不要试图像别人一样，做你自己。对自己要有安全感。</div>
+                <div class="circle-footer">探讨</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
